@@ -1,62 +1,35 @@
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Amiri', serif;
-  overflow-y: auto;
-}
-
-/* Main Website Content */
-#main-content {
-  height: auto;
-  min-height: 100vh;
-  overflow-y: auto;
-}
-
-header {
-  background-image: url('/images/header-background.jpg');
-  background-size: cover;
-  background-position: center;
-  color: white;
-  padding: 40px 20px;
-  text-align: center;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-}
-
-/* Navbar Styles */
-.navbar {
-  background-color: #444;
+.course-navbar {
   display: flex;
-  position: relative;
+  background-color: #444;
+  color: white;
 }
 
-.nav-tab {
+.course-navbar .tab {
   flex: 1;
   text-align: center;
   padding: 14px 16px;
-  color: white;
-  text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.nav-tab:hover {
-  background-color: #555;
-}
-
-.nav-tab.active {
-  background-color: #666;
-}
-
-.nav-tab.relative {
   position: relative;
 }
 
-.nav-tab > div {
-  display: none;
+.course-navbar .tab a {
+  color: white;
+  text-decoration: none;
 }
 
-.nav-tab.active > div {
+.course-navbar .tab:hover {
+  background-color: #555;
+}
+
+.course-navbar .tab.active-tab {
+  background-color: #666;
+}
+
+.course-navbar .dropdown {
+  position: relative;
+}
+
+.course-navbar .dropdown-content {
   display: block;
   position: absolute;
   top: 100%;
@@ -67,326 +40,14 @@ header {
   z-index: 1000;
 }
 
-.nav-tab > div > a {
+.course-navbar .dropdown-content a {
   display: block;
   padding: 12px 16px;
+  text-align: left;
   color: white;
   text-decoration: none;
 }
 
-.nav-tab > div > a:hover {
+.course-navbar .dropdown-content a:hover {
   background-color: #666;
-}
-
-/* Dropdown styles */
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #555;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1001;
-  width: 100%;
-  left: 0;
-  top: 100%;
-}
-
-.dropdown-content a {
-  color: white;
-  padding: 12px 16px;
-  display: block;
-  text-align: left;
-}
-
-.dropdown-content a:hover {
-  background-color: #666;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-.dropdown.active .dropdown-content {
-  display: block;
-}
-
-/* Tab content styles */
-.tab-content {
-  display: none;
-  padding: 20px;
-  min-height: calc(100vh - 230px);
-  overflow: auto;
-  background-color: #f9f9f9;
-  position: relative;
-  z-index: 1;
-}
-
-.tab-content.active {
-  display: block;
-}
-
-/* Footer styles */
-.footer {
-  background-color: #444;
-  color: white;
-  text-align: center;
-  padding: 10px 20px;
-  width: 100%;
-  font-size: 14px;
-  margin-top: 0px;
-}
-
-.footer a {
-  color: #fff;
-  text-decoration: underline;
-}
-
-/* Login Form Styles */
-.login-form {
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.login-form h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.login-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.login-btn:hover {
-  background-color: #555;
-}
-
-/* Audio Message Area Styles */
-.messaging-container {
-  max-width: 800px;
-  margin: 20px auto;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-
-.messaging-header {
-  background-color: #444;
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.messaging-header h3 {
-  margin: 0;
-}
-
-.messaging-body {
-  padding: 20px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.message {
-  display: flex;
-  margin-bottom: 15px;
-  position: relative;
-}
-
-.message-time {
-  font-size: 12px;
-  color: #888;
-  min-width: 80px;
-}
-
-.message-content {
-  flex-grow: 1;
-  margin-left: 10px;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  position: relative;
-}
-
-.message-actions {
-  position: absolute;
-  right: 10px;
-  top: 5px;
-  display: none;
-}
-
-.message:hover .message-actions {
-  display: block;
-}
-
-.delete-btn {
-  background: none;
-  border: none;
-  color: #d9534f;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.messaging-footer {
-  padding: 15px;
-  border-top: 1px solid #eee;
-  display: flex;
-  align-items: center;
-}
-
-.audio-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  width: 100%;
-}
-
-.audio-btn {
-  padding: 10px 15px;
-  background-color: #444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s;
-}
-
-.audio-btn:hover {
-  background-color: #555;
-}
-
-.audio-btn i {
-  margin-right: 5px;
-}
-
-.timer {
-  margin-left: 15px;
-  color: #666;
-  font-size: 14px;
-}
-
-.audio-upload {
-  display: none;
-}
-
-.recording-indicator {
-  display: none;
-  color: #d9534f;
-  font-weight: bold;
-  margin-left: 15px;
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-/* Back button */
-.back-btn {
-  margin-bottom: 20px;
-  padding: 8px 16px;
-  background-color: #444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.back-btn:hover {
-  background-color: #555;
-}
-
-/* Student list */
-.student-list {
-  max-width: 600px;
-  margin: 40px auto;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  padding: 20px;
-}
-
-.student-list h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.student-item {
-  padding: 12px 15px;
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.3s;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.student-item:last-child {
-  border-bottom: none;
-}
-
-.student-item:hover {
-  background-color: #f5f5f5;
-}
-
-.student-name {
-  font-weight: bold;
-}
-
-.new-message-indicator {
-  background-color: #d9534f;
-  color: white;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 10px;
-}
-
-/* Error message */
-.error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  text-align: center;
 }
