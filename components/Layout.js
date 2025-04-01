@@ -5,12 +5,21 @@ import { supabase } from '../lib/supabaseClient';
 
 export default function Layout({ children, title = 'Course Dashboard' }) {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Get current user in a safe way
     const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user || null);
+      try {
+        setIsLoading(true);
+        const { data } = await supabase.auth.getUser();
+        setUser(data?.user || null);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     getUser();
@@ -36,15 +45,17 @@ export default function Layout({ children, title = 'Course Dashboard' }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
       <div id="main-content">
         <header>
           <h1>Course Dashboard</h1>
         </header>
         
+        {/* Only render Navbar once */}
         <Navbar user={user} />
         
-        <main>{children}</main>
+        <main>
+          {children}
+        </main>
         
         <div className="footer">
           This site is managed by Stephanie Cho. Please email <a href="mailto:sgcxliv@stanford.edu">sgcxliv@stanford.edu</a> for any issues.
