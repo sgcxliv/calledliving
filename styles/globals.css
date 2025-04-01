@@ -1,4 +1,123 @@
-/* Tab content styles (continued) */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Amiri', serif;
+  overflow-y: auto;
+}
+
+/* Main Website Content */
+#main-content {
+  height: auto;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+header {
+  background-image: url('/images/header-background.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 40px 20px;
+  text-align: center;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #444;
+  display: flex;
+  position: relative;
+}
+
+.nav-tab {
+  flex: 1;
+  text-align: center;
+  padding: 14px 16px;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.nav-tab:hover {
+  background-color: #555;
+}
+
+.nav-tab.active {
+  background-color: #666;
+}
+
+.nav-tab.relative {
+  position: relative;
+}
+
+.nav-tab > div {
+  display: none;
+}
+
+.nav-tab.active > div {
+  display: block;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #555;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.nav-tab > div > a {
+  display: block;
+  padding: 12px 16px;
+  color: white;
+  text-decoration: none;
+}
+
+.nav-tab > div > a:hover {
+  background-color: #666;
+}
+/* Dropdown styles */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #555;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1001;
+  width: 100%;
+  left: 0;
+  top: 100%;
+}
+
+.dropdown-content a {
+  color: white;
+  padding: 12px 16px;
+  display: block;
+  text-align: left;
+}
+
+.dropdown-content a:hover {
+  background-color: #666;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown.active .dropdown-content {
+  display: block;
+}
+
+/* Tab content styles */
+.tab-content {
+  display: none;
+  padding: 20px;
+  min-height: calc(100vh - 230px);
+  overflow: auto;
+  background-color: #f9f9f9;
+  position: relative;
+  z-/* Tab content styles (continued) */
 .tab-content {
   display: none;
   padding: 20px;
