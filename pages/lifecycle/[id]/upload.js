@@ -1,7 +1,9 @@
 // pages/lifecycle/[id]/upload.js
 import LifecycleLayout from '../../../components/LifecycleLayout';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../../lib/supabaseClient';
+import { uploadFileToSupabase, saveContributionMetadata } from '../../../utils/fileUpload';
 
 export default function LifecycleUpload() {
   const router = useRouter();
@@ -10,6 +12,9 @@ export default function LifecycleUpload() {
   const [mediaType, setMediaType] = useState('image');
   const [caption, setCaption] = useState('');
   const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   
   if (!id) {
     return <div>Loading...</div>;
@@ -18,31 +23,68 @@ export default function LifecycleUpload() {
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+      setError(null); // Clear any previous errors
     }
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would implement the actual file upload logic
-    // For example, using Supabase storage or another solution
-    console.log({
-      name,
-      mediaType,
-      caption,
-      file
-    });
     
-    // For now, just show a simple alert
-    alert('Your contribution has been submitted!');
+    if (!file) {
+      setError('Please select a file to upload');
+      return;
+    }
     
-    // Reset the form
-    setName('');
-    setMediaType('image');
-    setCaption('');
-    setFile(null);
-    
-    // You could redirect to a success page or reload
-    // router.push(`/lifecycle/${id}/upload?success=true`);
+    try {
+      setUploading(true);
+      setError(null);
+      
+      // 1. Upload file to Supabase Storage
+      const { path, error: uploadError } = await uploadFileToSupabase(
+        file, 
+        mediaType, 
+        id,
+        supabase
+      );
+        
+      if (uploadError) {
+        throw new Error(uploadError);
+      }
+      
+      // 2. Save metadata to Supabase database
+      const { error: metadataError } = await saveContributionMetadata({
+        week_id: id,
+        contributor_name: name,
+        media_type: mediaType,
+        caption: caption,
+        file_path: path,
+        file_size: file.size,
+        file_type: file.type,
+        created_at: new Date()
+      }, supabase);
+        
+      if (metadataError) {
+        throw new Error(metadataError);
+      }
+      
+      // Success!
+      setSuccess(true);
+      setName('');
+      setMediaType('image');
+      setCaption('');
+      setFile(null);
+      
+      // Reload the page after 2 seconds to show the new contribution
+      setTimeout(() => {
+        router.reload();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setError('Error uploading file: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -55,6 +97,18 @@ export default function LifecycleUpload() {
         <h3>Student Contributions</h3>
         <p>Share your reflections, insights, and creative responses to our course materials. Upload images, videos, or text that represent your engagement with the week's theme.</p>
         
+        {success && (
+          <div style={{ padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '15px' }}>
+            Your contribution has been uploaded successfully!
+          </div>
+        )}
+        
+        {error && (
+          <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '15px' }}>
+            {error}
+          </div>
+        )}
+        
         {/* Upload Form */}
         <form onSubmit={handleSubmit} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
           <h4>Add Your Contribution</h4>
@@ -65,6 +119,7 @@ export default function LifecycleUpload() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              disabled={uploading}
               style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
             />
           </div>
@@ -72,6 +127,7 @@ export default function LifecycleUpload() {
             <select
               value={mediaType}
               onChange={(e) => setMediaType(e.target.value)}
+              disabled={uploading}
               style={{ padding: '8px', marginRight: '10px', border: '1px solid #ddd', borderRadius: '4px', width: '120px' }}
             >
               <option value="image">Image</option>
@@ -82,6 +138,7 @@ export default function LifecycleUpload() {
               type="file"
               onChange={handleFileChange}
               required
+              disabled={uploading}
               style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
             />
           </div>
@@ -89,13 +146,22 @@ export default function LifecycleUpload() {
             placeholder="Add a caption or description (optional)"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
+            disabled={uploading}
             style={{ width: '100%', padding: '8px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', minHeight: '60px' }}
           ></textarea>
           <button
             type="submit"
-            style={{ backgroundColor: '#2d4059', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer' }}
+            disabled={uploading}
+            style={{ 
+              backgroundColor: uploading ? '#999' : '#2d4059', 
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 15px', 
+              borderRadius: '4px', 
+              cursor: uploading ? 'not-allowed' : 'pointer' 
+            }}
           >
-            Upload
+            {uploading ? 'Uploading...' : 'Upload'}
           </button>
         </form>
         
