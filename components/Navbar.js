@@ -16,26 +16,30 @@ export default function Navbar({ user }) {
     setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
   };
 
+  const isActive = (path) => {
+    return router.pathname === path ? 'active-tab' : '';
+  };
+
   return (
-    <div className="navbar">
-      <ul>
-        <li>
-          <Link href="/" className={router.pathname === '/' ? 'active' : ''}>
-            Main
-          </Link>
-        </li>
-        <li>
-          <Link href="/syllabus" className={router.pathname === '/syllabus' ? 'active' : ''}>
-            Syllabus
-          </Link>
-        </li>
-        <li>
-          <Link href="/calendar" className={router.pathname === '/calendar' ? 'active' : ''}>
-            Calendar
-          </Link>
-        </li>
-        <li className={`dropdown ${activeDropdown === 'lifeCycle' ? 'active' : ''}`}>
-          <a href="#" onClick={() => toggleDropdown('lifeCycle')}>Life Cycle</a>
+    <nav className="course-navbar">
+      <div className={`tab ${isActive('/')}`}>
+        <Link href="/">Main</Link>
+      </div>
+      
+      <div className={`tab ${isActive('/syllabus')}`}>
+        <Link href="/syllabus">Syllabus</Link>
+      </div>
+      
+      <div className={`tab ${isActive('/calendar')}`}>
+        <Link href="/calendar">Calendar</Link>
+      </div>
+      
+      <div 
+        className={`tab dropdown ${activeDropdown === 'lifeCycle' ? 'active-dropdown' : ''}`}
+        onClick={() => toggleDropdown('lifeCycle')}
+      >
+        <span>Life Cycle</span>
+        {activeDropdown === 'lifeCycle' && (
           <div className="dropdown-content">
             {[
               '1. What is Called Living?',
@@ -54,15 +58,14 @@ export default function Navbar({ user }) {
               </Link>
             ))}
           </div>
-        </li>
-        <li>
-          <Link href={user ? "/dashboard" : "/login"} 
-            className={router.pathname === '/login' || router.pathname === '/dashboard' ? 'active' : ''}
-          >
-            {user ? 'Dashboard' : 'Login'}
-          </Link>
-        </li>
-      </ul>
-    </div>
+        )}
+      </div>
+      
+      <div className={`tab ${isActive('/login') || isActive('/dashboard')}`}>
+        <Link href={user ? "/dashboard" : "/login"}>
+          {user ? 'Dashboard' : 'Login'}
+        </Link>
+      </div>
+    </nav>
   );
 }
