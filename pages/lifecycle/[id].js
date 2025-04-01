@@ -1,7 +1,7 @@
 // pages/lifecycle/[id].js
 import Layout from '../../components/Layout';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function LifecyclePage() {
@@ -14,6 +14,7 @@ export default function LifecyclePage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [submissions, setSubmissions] = useState([]);
   
   const titles = {
     '1': 'What is Called Living?',
@@ -26,6 +27,33 @@ export default function LifecyclePage() {
     // '8': 'Untitled',
     // '9': 'Untitled',
     // '10': 'Untitled',
+  };
+
+  // Fetch submissions when the page loads
+  useEffect(() => {
+    if (id) {
+      fetchSubmissions();
+    }
+  }, [id]);
+  
+  // Function to fetch submissions
+  const fetchSubmissions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('student_contributions')
+        .select('*')
+        .eq('week_id', id)
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error('Error fetching submissions:', error);
+        return;
+      }
+      
+      setSubmissions(data || []);
+    } catch (error) {
+      console.error('Error fetching submissions:', error);
+    }
   };
 
   if (!id || !titles[id]) {
@@ -46,36 +74,53 @@ export default function LifecyclePage() {
     }
   };
   
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!file) {
-    setError('Please select a file to upload');
-    return;
-  }
-  
-  try {
-    setUploading(true);
-    setError(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-    // Generate file path
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `${id}/${mediaType}/${fileName}`;
-    
-    // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from('contributions')
-      .upload(filePath, file);
-        
-    if (uploadError) {
-      throw uploadError;
+    if (!file) {
+      setError('Please select a file to upload');
+      return;
     }
     
-    // Save metadata to database
-    const { error: insertError } = await supabase
-      .from('student_contributions')
-      .insert({
+    try {
+      setUploading(true);
+      setError(null);
+      
+      // Generate file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${id}/${mediaType}/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('contributions')
+        .upload(filePath, file);
+          
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      // Save metadata to database
+      const { data: insertData, error: insertError } = await supabase
+        .from('student_contributions')
+        .insert({
+          week_id: id,
+          contributor_name: name,
+          media_type: mediaType,
+          caption: caption,
+          file_path: filePath,
+          file_size: file.size,
+          file_type: file.type,
+          created_at: new Date()
+        });
+          
+      if (insertError) {
+        throw insertError;
+      }
+      
+      // Add the new submission to the list immediately
+      const newSubmission = {
+        id: Date.now(), // Temporary ID until we refresh
         week_id: id,
         contributor_name: name,
         media_type: mediaType,
@@ -84,31 +129,30 @@ const handleSubmit = async (e) => {
         file_size: file.size,
         file_type: file.type,
         created_at: new Date()
-      });
-        
-    if (insertError) {
-      throw insertError;
+      };
+      
+      setSubmissions([newSubmission, ...submissions]);
+      
+      // Success!
+      setSuccess(true);
+      setName('');
+      setMediaType('image');
+      setCaption('');
+      setFile(null);
+      
+      // Clear success message after 3 seconds and refresh submissions
+      setTimeout(() => {
+        setSuccess(false);
+        fetchSubmissions(); // Refresh to get the accurate data with server IDs
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setError('Error uploading file: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploading(false);
     }
-    
-    // Success!
-    setSuccess(true);
-    setName('');
-    setMediaType('image');
-    setCaption('');
-    setFile(null);
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setSuccess(false);
-    }, 3000);
-    
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    setError('Error uploading file: ' + (error.message || 'Unknown error'));
-  } finally {
-    setUploading(false);
-  }
-};
+  };
   
   return (
     <Layout title={`Course Dashboard - Week ${id}: ${titles[id]}`}>
@@ -137,38 +181,36 @@ const handleSubmit = async (e) => {
             <ul>
               <li>Exploration of various conceptions of "living" as a term in everyday language usage</li>
               <li>Critical reflection on contemporary modes of living, what it was, and what it has become</li>
-           <li>Living at Stanford, and the Life of Students</li>
-
+              <li>Living at Stanford, and the Life of Students</li>
             </ul>
           </div>
         </div>
         
-{/* Materials Section */}
-<div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-  <h2>Course Materials</h2>
-  <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
-  
-  <div style={{ marginTop: '30px' }}>
-    <h3>Required Texts</h3>
-    <ul>
-      <li>
-        <a 
-          href="/readings/benjamin.pdf" 
-          download
-          style={{ color: '#2596be', textDecoration: 'none' }}
-        >
-          Benjamin, Walter. "The Life of Students"
-        </a>
-      </li>
-    </ul>
-  </div>
-</div>
-
+        {/* Materials Section */}
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+          <h2>Course Materials</h2>
+          <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
+          
+          <div style={{ marginTop: '30px' }}>
+            <h3>Required Texts</h3>
+            <ul>
+              <li>
+                <a 
+                  href="/readings/benjamin.pdf" 
+                  download
+                  style={{ color: '#2596be', textDecoration: 'none' }}
+                >
+                  Benjamin, Walter. "The Life of Students"
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
         
         {/* Assignment Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>Assignment: Task</h2>
-          <p>Upload a picture of yourself as a child with your family (or a member of your family) which means something to you and which you’d be open to discussing with the class.</p>
+          <p>Upload a picture of yourself as a child with your family (or a member of your family) which means something to you and which you'd be open to discussing with the class.</p>
           
           <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
             <h3>Task</h3>
@@ -263,6 +305,61 @@ const handleSubmit = async (e) => {
               {uploading ? 'Uploading...' : 'Submit Contribution'}
             </button>
           </form>
+        </div>
+        
+        {/* Class Submissions Section */}
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+          <h2>Class Submissions</h2>
+          
+          {submissions.length === 0 ? (
+            <p>No submissions yet. Be the first to contribute!</p>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }}>
+              {submissions.map((submission) => (
+                <div key={submission.id} style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                  <div style={{ padding: '12px 15px', borderBottom: '1px solid #eee', backgroundColor: '#f9f9f9' }}>
+                    <p style={{ fontWeight: 'bold', margin: '0', fontSize: '16px' }}>{submission.contributor_name}</p>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
+                      {new Date(submission.created_at).toLocaleDateString()} {new Date(submission.created_at).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  
+                  {submission.media_type === 'image' && (
+                    <div style={{ width: '100%', height: '220px', overflow: 'hidden' }}>
+                      <img 
+                        src={`${supabase.storage.from('contributions').getPublicUrl(submission.file_path).data.publicUrl}`}
+                        alt={submission.caption} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  )}
+                  
+                  {submission.media_type === 'video' && (
+                    <div style={{ width: '100%', height: '220px' }}>
+                      <video 
+                        src={`${supabase.storage.from('contributions').getPublicUrl(submission.file_path).data.publicUrl}`}
+                        controls
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  )}
+                  
+                  {submission.media_type === 'text' && (
+                    <div style={{ padding: '15px', backgroundColor: '#f9f9f9', height: '180px', overflow: 'auto' }}>
+                      <p style={{ whiteSpace: 'pre-wrap' }}>{submission.caption}</p>
+                    </div>
+                  )}
+                  
+                  {/* Only show caption separately for image and video */}
+                  {(submission.media_type === 'image' || submission.media_type === 'video') && (
+                    <div style={{ padding: '15px' }}>
+                      <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>{submission.caption}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Layout>
