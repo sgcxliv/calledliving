@@ -77,6 +77,7 @@ header {
 .nav-tab > div > a:hover {
   background-color: #666;
 }
+
 /* Dropdown styles */
 .dropdown-content {
   display: none;
@@ -110,14 +111,6 @@ header {
 }
 
 /* Tab content styles */
-.tab-content {
-  display: none;
-  padding: 20px;
-  min-height: calc(100vh - 230px);
-  overflow: auto;
-  background-color: #f9f9f9;
-  position: relative;
-  z-/* Tab content styles (continued) */
 .tab-content {
   display: none;
   padding: 20px;
