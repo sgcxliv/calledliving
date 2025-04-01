@@ -3,6 +3,7 @@ import LoginForm from '../components/LoginForm';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import Link from 'next/link';
 
 export default function Login() {
   const router = useRouter();
@@ -36,7 +37,23 @@ export default function Login() {
           <>
             <h2>Student Login</h2>
             <p>Please log in to access your audio messaging portal. All other parts of the site are freely accessible without login.</p>
+            
             <LoginForm onSuccessfulLogin={() => router.push('/dashboard')} />
+            
+            <div className="signup-section" style={{ marginTop: '30px', textAlign: 'center' }}>
+              <p>First time here? You'll need to create an account.</p>
+              <Link href="/signup">
+                <a className="signup-button" style={{
+                  display: 'inline-block',
+                  padding: '10px 20px',
+                  backgroundColor: '#555',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px',
+                  marginTop: '10px'
+                }}>Create an Account</a>
+              </Link>
+            </div>
           </>
         )}
       </div>
