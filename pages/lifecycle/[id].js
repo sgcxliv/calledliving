@@ -151,10 +151,7 @@ export default function LifecyclePage() {
           <div style={{ marginTop: '30px' }}>
             <h3>Required Texts</h3>
             <ul>
-              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Nagel, Thomas. "What Is It Like to Be a Bat?"</a></li>
-              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Camus, Albert. "The Myth of Sisyphus"</a></li>
-              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Le Guin, Ursula K. "The Ones Who Walk Away from Omelas"</a></li>
-              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Dostoyevsky, Fyodor. "Notes from Underground" (excerpts)</a></li>
+              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Benjamin, Walter. "The Life of Students"</a></li>
             </ul>
           </div>
         </div>
