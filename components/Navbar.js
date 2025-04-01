@@ -1,48 +1,63 @@
-import Layout from '../components/Layout';
-
-export default function Home() {
-  return (
-    <Layout title="Course Dashboard - Main">
-      <h2>Welcome to "What is Called Living?"</h2>
-      <p>This is the main landing page for our course. Use the navigation tabs above to explore different sections of the course site.</p>
-      
-      <div style={{ marginTop: '30px' }}>
-        <h3>Course Highlights</h3>
-        <ul>
-          <li>Explore the concept of "living" through various lenses</li>
-          <li>Engage in field trips, films, readings, and discussions</li>
-          <li>Develop critical thinking skills through philosophical inquiry</li>
-          <li>Participate in collective writing and self-examination activities</li>
-        </ul>
-      </div>
-      
-      <div style={{ marginTop: '30px' }}>
-        <h3>Announcements</h3>
-        <div style={{ 
-          backgroundColor: '#fff', 
-          padding: '15px', 
-          borderRadius: '5px', 
-          boxShadow: '0 2px 5px rgba(0,0,0,0.1)', 
-          marginBottom: '15px' 
-        }}>
-          <h4 style={{ marginTop: 0 }}>Welcome to the Course!</h4>
-          <p>Please review the syllabus and complete the introductory assignment by next week.</p>
-        </div>
-        <div style={{ 
-          backgroundColor: '#fff', 
-          padding: '15px', 
-          borderRadius: '5px', 
-          boxShadow: '0 2px 5px rgba(0,0,0,0.1)' 
-        }}>
-          <h4 style={{ marginTop: 0 }}>Field Trip Scheduled</h4>
-          <p>Our first field trip to the scent shop is scheduled for Week 3. Please sign up in the portal.</p>
-        </div>
-      </div>
-    </Layout>
-  );
+.navbar {
+  background-color: #444;
+  display: flex;
+  position: relative;
 }
 
-// Disable server-side rendering to prevent potential errors
-export const config = {
-  runtime: 'client'
-};
+.navbar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  width: 100%;
+}
+
+.navbar li {
+  flex: 1;
+  position: relative;
+}
+
+.navbar li > a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.navbar li > a:hover,
+.navbar li > a.active {
+  background-color: #666;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #555;
+  width: 100%;
+  left: 0;
+  top: 100%;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.dropdown.active .dropdown-content {
+  display: block;
+}
+
+.dropdown-content a {
+  display: block;
+  color: white;
+  padding: 12px 16px;
+  text-decoration: none;
+  text-align: left;
+}
+
+.dropdown-content a:hover {
+  background-color: #666;
+}
