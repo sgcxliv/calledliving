@@ -1,51 +1,30 @@
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { supabase } from '../lib/supabaseClient';
+import { useState } from 'react';
+import Layout from '../components/Layout';
 
-export default function Navbar({ user }) {
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const router = useRouter();
+export default function CalendarPage() {
+  const [activeTab, setActiveTab] = useState('Calendar');
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
-  };
-
-  const toggleDropdown = (dropdownName) => {
-    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
-  };
+  const courseSchedule = [
+    { week: 1, date: 'April 1st', topic: 'Introductions', assignments: 'Meal & Item Exchange', time: '1:30 - 2:50, Room' },
+    { week: 2, date: 'April 3rd', topic: 'Student Life', assignments: 'Bing Nursery Sign-Ups', time: '1:30 - 2:50, Room' },
+    { week: 3, date: 'April 8th', topic: 'Family Matters', assignments: 'Upload a Family Photo', time: '1:30 - 2:50, Room' },
+    { week: 4, date: 'April 10th', topic: 'Recess', assignments: 'Play!', time: '1:30 - 2:50, Room' },
+    { week: 5, date: 'April 15th', topic: 'Making a Living', assignments: 'Interview Clips', time: '1:30 - 2:50, Room' },
+    { week: 6, date: 'April 17th', topic: 'Work-Life Balance', assignments: '?', time: '1:30 - 2:50, Room' },
+    { week: 6, date: 'April 22nd', topic: 'Nightlife', assignments: 'Signs of Nightlife', time: '1:30 - 2:50, Room' },
+    { week: 6, date: 'April 24th', topic: 'Staying Awake', assignments: '?', time: '9:30 - 10:50, Room' }
+  ];
 
   return (
-    <div className="navbar bg-gray-800 text-white flex">
-      <div className="flex-1 flex">
-        <Link 
-          href="/" 
-          className={`nav-tab ${router.pathname === '/' ? 'active' : ''}`}
-        >
-          Main
-        </Link>
-        <Link 
-          href="/syllabus" 
-          className={`nav-tab ${router.pathname === '/syllabus' ? 'active' : ''}`}
-        >
-          Syllabus
-        </Link>
-        <Link 
-          href="/calendar" 
-          className={`nav-tab ${router.pathname === '/calendar' ? 'active' : ''}`}
-        >
-          Calendar
-        </Link>
-        
-        {/* Life Cycle Dropdown */}
-        <div 
-          className={`relative nav-tab ${activeDropdown === 'lifeCycle' ? 'active' : ''}`}
-          onClick={() => toggleDropdown('lifeCycle')}
-        >
-          Life Cycle
-          {activeDropdown === 'lifeCycle' && (
-            <div className="absolute top-full left-0 bg-gray-700 w-64 z-50">
+    <Layout>
+      <div className="course-dashboard">
+        <div className="navbar">
+          <a href="/" className={activeTab === 'Main' ? 'active' : ''}>Main</a>
+          <a href="/syllabus" className={activeTab === 'Syllabus' ? 'active' : ''}>Syllabus</a>
+          <a href="/calendar" className={activeTab === 'Calendar' ? 'active' : ''}>Calendar</a>
+          <div className="dropdown">
+            <a href="#" className={activeTab === 'Life Cycle' ? 'active' : ''}>Life Cycle</a>
+            <div className="dropdown-content">
               {[
                 '1. What is Called Living?',
                 '2. Childhood, or The No-Place',
@@ -57,27 +36,42 @@ export default function Navbar({ user }) {
                 '8. Untitled',
                 '9. Untitled',
                 '10. Untitled'
-              ].map((topic, index) => (
-                <Link 
-                  key={index} 
-                  href={`/lifecycle/${index + 1}`} 
-                  className="block px-4 py-2 hover:bg-gray-600"
-                >
-                  {topic}
-                </Link>
+              ].map((item, index) => (
+                <a key={index} href={`/lifecycle/${index + 1}`}>{item}</a>
               ))}
             </div>
-          )}
+          </div>
+          <a href="/login" className={activeTab === 'Login' ? 'active' : ''}>Login</a>
         </div>
-        
-        {/* Login/Dashboard Tab */}
-        <Link 
-          href={user ? "/dashboard" : "/login"} 
-          className={`nav-tab ${router.pathname === '/login' || router.pathname === '/dashboard' ? 'active' : ''}`}
-        >
-          {user ? 'Dashboard' : 'Login'}
-        </Link>
+
+        <div className="tab-content active">
+          <h2>Course Calendar</h2>
+          <p>Below is the schedule for the entire course. Please note that this schedule is subject to change.</p>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Week</th>
+                <th>Date</th>
+                <th>Topic</th>
+                <th>Assignments</th>
+                <th>Time & Place</th>
+              </tr>
+            </thead>
+            <tbody>
+              {courseSchedule.map((session, index) => (
+                <tr key={index}>
+                  <td>{session.week}</td>
+                  <td>{session.date}</td>
+                  <td>{session.topic}</td>
+                  <td>{session.assignments}</td>
+                  <td>{session.time}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
