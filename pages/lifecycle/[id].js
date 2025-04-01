@@ -167,13 +167,13 @@ export default function LifecyclePage() {
         
         {/* Assignment Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-          <h2>Assignment</h2>
-          <p>Upload a picture that represents your interpretation of "living" as discussed in this week's readings.</p>
+          <h2>Assignment: Task</h2>
+          <p>Upload a picture of yourself as a child with your family (or a member of your family) which means something to you and which you’d be open to discussing with the class.</p>
           
           <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
             <h3>Task</h3>
-            <p>Upload a picture</p>
-            <p><strong>Due:</strong> Upload before Thursday's Class</p>
+            <p>Upload Your Photo Here. Please note it will be shared with the class. </p>
+            <p><strong>Due:</strong> Upload before Next Tuesdays's Class</p>
             <p><strong>Submission Format:</strong> Image document uploaded to the course portal</p>
           </div>
         </div>
