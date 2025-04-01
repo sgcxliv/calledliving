@@ -42,16 +42,18 @@ export default function Login() {
             
             <div className="signup-section" style={{ marginTop: '30px', textAlign: 'center' }}>
               <p>First time here? You'll need to create an account.</p>
-              <Link href="/signup">
-                <a className="signup-button" style={{
-                  display: 'inline-block',
-                  padding: '10px 20px',
-                  backgroundColor: '#555',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '4px',
-                  marginTop: '10px'
-                }}>Create an Account</a>
+              <Link href="/signup" 
+                    className="signup-button" 
+                    style={{
+                      display: 'inline-block',
+                      padding: '10px 20px',
+                      backgroundColor: '#555',
+                      color: 'white',
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      marginTop: '10px'
+                    }}>
+                Create an Account
               </Link>
             </div>
           </>
