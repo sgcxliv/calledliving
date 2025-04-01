@@ -17,15 +17,15 @@ export default function LifecyclePage() {
   
   const titles = {
     '1': 'What is Called Living?',
-    '2': 'Childhood, or The No-Place',
-    '3': 'Real Life, or, The Workplace',
-    '4': 'Nightlife, or, The Dark Side',
-    '5': 'Untitled',
-    '6': 'Untitled',
-    '7': 'Untitled',
-    '8': 'Untitled',
-    '9': 'Untitled',
-    '10': 'Untitled',
+    // '2': 'Childhood, or The No-Place',
+    // '3': 'Real Life, or, The Workplace',
+    // '4': 'Nightlife, or, The Dark Side',
+    // '5': 'Untitled',
+    // '6': 'Untitled',
+    // '7': 'Untitled',
+    // '8': 'Untitled',
+    // '9': 'Untitled',
+    // '10': 'Untitled',
   };
 
   if (!id || !titles[id]) {
