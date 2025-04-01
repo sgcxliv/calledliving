@@ -17,7 +17,7 @@ export default function Home() {
   }, []);
 
   return (
-    <Layout title="Course Dashboard - Home">
+    <Layout title="RELIGST18N: What is Called Living? Course Dashboard - Home">
       <div className="tab-content active">
         <h2>Welcome to RELIGST18N: What is Called Living?</h2>
         <p>Here you will find everything you need for the class. 
