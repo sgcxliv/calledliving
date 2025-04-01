@@ -143,18 +143,27 @@ export default function LifecyclePage() {
           </div>
         </div>
         
-        {/* Materials Section */}
-        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-          <h2>Course Materials</h2>
-          <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
-          
-          <div style={{ marginTop: '30px' }}>
-            <h3>Required Texts</h3>
-            <ul>
-              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Benjamin, Walter. "The Life of Students"</a></li>
-            </ul>
-          </div>
-        </div>
+{/* Materials Section */}
+<div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+  <h2>Course Materials</h2>
+  <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
+  
+  <div style={{ marginTop: '30px' }}>
+    <h3>Required Texts</h3>
+    <ul>
+      <li>
+        <a 
+          href="/readings/benjamin.pdf" 
+          download
+          style={{ color: '#2596be', textDecoration: 'none' }}
+        >
+          Benjamin, Walter. "The Life of Students"
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
         
         {/* Assignment Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
