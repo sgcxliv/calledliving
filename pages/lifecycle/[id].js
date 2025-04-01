@@ -135,10 +135,10 @@ export default function LifecyclePage() {
           <div style={{ marginTop: '30px' }}>
             <h3>Questions to think about</h3>
             <ul>
-              <li>Exploration of various conceptions of "living" across cultures and time periods</li>
-              <li>Critical reflection on contemporary modes of living</li>
-              <li>Philosophical inquiry into the meaning and purpose of life</li>
-              <li>Consideration of alternative perspectives on existence and being</li>
+              <li>Exploration of various conceptions of "living" as a term in everyday language usage</li>
+              <li>Critical reflection on contemporary modes of living, what it was, and what it has become</li>
+           <li>Living at Stanford, and the Life of Students</li>
+
             </ul>
           </div>
         </div>
