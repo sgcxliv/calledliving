@@ -46,70 +46,70 @@ export default function LifecyclePage() {
     }
   };
   
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!file) {
+    setError('Please select a file to upload');
+    return;
+  }
+  
+  try {
+    setUploading(true);
+    setError(null);
     
-    if (!file) {
-      setError('Please select a file to upload');
-      return;
+    // Generate file path
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${id}/${mediaType}/${fileName}`;
+    
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('contributions')
+      .upload(filePath, file);
+        
+    if (uploadError) {
+      throw uploadError;
     }
     
-    try {
-      setUploading(true);
-      setError(null);
-      
-      // Generate file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${id}/${mediaType}/${fileName}`;
-      
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('contributions')
-        .upload(filePath, file);
+    // Save metadata to database
+    const { error: insertError } = await supabase
+      .from('student_contributions')
+      .insert({
+        week_id: id,
+        contributor_name: name,
+        media_type: mediaType,
+        caption: caption,
+        file_path: filePath,
+        file_size: file.size,
+        file_type: file.type,
+        created_at: new Date()
+      });
         
-      if (uploadError) {
-        throw uploadError;
-      }
-      
-      // Save metadata to database
-      const { error: insertError } = await supabase
-        .from('student_contributions')
-        .insert({
-          week_id: id,
-          contributor_name: name,
-          media_type: mediaType,
-          caption: caption,
-          file_path: filePath,
-          file_size: file.size,
-          file_type: file.type,
-          created_at: new Date()
-        });
-        
-      if (insertError) {
-        throw insertError;
-      }
-      
-      // Success!
-      setSuccess(true);
-      setName('');
-      setMediaType('image');
-      setCaption('');
-      setFile(null);
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
-      
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      setError('Error uploading file: ' + (error.message || 'Unknown error'));
-    } finally {
-      setUploading(false);
+    if (insertError) {
+      throw insertError;
     }
-  };
-
+    
+    // Success!
+    setSuccess(true);
+    setName('');
+    setMediaType('image');
+    setCaption('');
+    setFile(null);
+    
+    // Clear success message after 3 seconds
+    setTimeout(() => {
+      setSuccess(false);
+    }, 3000);
+    
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    setError('Error uploading file: ' + (error.message || 'Unknown error'));
+  } finally {
+    setUploading(false);
+  }
+};
+  
   return (
     <Layout title={`Course Dashboard - Week ${id}: ${titles[id]}`}>
       <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
