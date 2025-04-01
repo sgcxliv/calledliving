@@ -6,12 +6,26 @@ import { useRouter } from 'next/router';
 
 export default function Layout({ children, title = 'Course Dashboard' }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Get current user on page load
-    const { data: { user } } = supabase.auth.getUser();
-    setUser(user);
+    // Safe way to get user on page load
+    const getUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        // Only set user if data exists and has user property
+        if (data && data.user) {
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error('Auth error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUser();
 
     // Set up auth state listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -21,7 +35,9 @@ export default function Layout({ children, title = 'Course Dashboard' }) {
     );
 
     return () => {
-      authListener?.subscription.unsubscribe();
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
   }, []);
 
