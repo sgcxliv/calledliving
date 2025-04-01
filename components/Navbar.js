@@ -1,77 +1,48 @@
-import { useState } from 'react';
 import Layout from '../components/Layout';
 
-export default function CalendarPage() {
-  const [activeTab, setActiveTab] = useState('Calendar');
-
-  const courseSchedule = [
-    { week: 1, date: 'April 1st', topic: 'Introductions', assignments: 'Meal & Item Exchange', time: '1:30 - 2:50, Room' },
-    { week: 2, date: 'April 3rd', topic: 'Student Life', assignments: 'Bing Nursery Sign-Ups', time: '1:30 - 2:50, Room' },
-    { week: 3, date: 'April 8th', topic: 'Family Matters', assignments: 'Upload a Family Photo', time: '1:30 - 2:50, Room' },
-    { week: 4, date: 'April 10th', topic: 'Recess', assignments: 'Play!', time: '1:30 - 2:50, Room' },
-    { week: 5, date: 'April 15th', topic: 'Making a Living', assignments: 'Interview Clips', time: '1:30 - 2:50, Room' },
-    { week: 6, date: 'April 17th', topic: 'Work-Life Balance', assignments: '?', time: '1:30 - 2:50, Room' },
-    { week: 6, date: 'April 22nd', topic: 'Nightlife', assignments: 'Signs of Nightlife', time: '1:30 - 2:50, Room' },
-    { week: 6, date: 'April 24th', topic: 'Staying Awake', assignments: '?', time: '9:30 - 10:50, Room' }
-  ];
-
+export default function Home() {
   return (
-    <Layout>
-      <div className="course-dashboard">
-        <div className="navbar">
-          <a href="/" className={activeTab === 'Main' ? 'active' : ''}>Main</a>
-          <a href="/syllabus" className={activeTab === 'Syllabus' ? 'active' : ''}>Syllabus</a>
-          <a href="/calendar" className={activeTab === 'Calendar' ? 'active' : ''}>Calendar</a>
-          <div className="dropdown">
-            <a href="#" className={activeTab === 'Life Cycle' ? 'active' : ''}>Life Cycle</a>
-            <div className="dropdown-content">
-              {[
-                '1. What is Called Living?',
-                '2. Childhood, or The No-Place',
-                '3. Real Life, or, The Workplace',
-                '4. Nightlife, or, The Dark Side',
-                '5. Untitled',
-                '6. Untitled',
-                '7. Untitled',
-                '8. Untitled',
-                '9. Untitled',
-                '10. Untitled'
-              ].map((item, index) => (
-                <a key={index} href={`/lifecycle/${index + 1}`}>{item}</a>
-              ))}
-            </div>
-          </div>
-          <a href="/login" className={activeTab === 'Login' ? 'active' : ''}>Login</a>
+    <Layout title="Course Dashboard - Main">
+      <h2>Welcome to "What is Called Living?"</h2>
+      <p>This is the main landing page for our course. Use the navigation tabs above to explore different sections of the course site.</p>
+      
+      <div style={{ marginTop: '30px' }}>
+        <h3>Course Highlights</h3>
+        <ul>
+          <li>Explore the concept of "living" through various lenses</li>
+          <li>Engage in field trips, films, readings, and discussions</li>
+          <li>Develop critical thinking skills through philosophical inquiry</li>
+          <li>Participate in collective writing and self-examination activities</li>
+        </ul>
+      </div>
+      
+      <div style={{ marginTop: '30px' }}>
+        <h3>Announcements</h3>
+        <div style={{ 
+          backgroundColor: '#fff', 
+          padding: '15px', 
+          borderRadius: '5px', 
+          boxShadow: '0 2px 5px rgba(0,0,0,0.1)', 
+          marginBottom: '15px' 
+        }}>
+          <h4 style={{ marginTop: 0 }}>Welcome to the Course!</h4>
+          <p>Please review the syllabus and complete the introductory assignment by next week.</p>
         </div>
-
-        <div className="tab-content active">
-          <h2>Course Calendar</h2>
-          <p>Below is the schedule for the entire course. Please note that this schedule is subject to change.</p>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>Week</th>
-                <th>Date</th>
-                <th>Topic</th>
-                <th>Assignments</th>
-                <th>Time & Place</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courseSchedule.map((session, index) => (
-                <tr key={index}>
-                  <td>{session.week}</td>
-                  <td>{session.date}</td>
-                  <td>{session.topic}</td>
-                  <td>{session.assignments}</td>
-                  <td>{session.time}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={{ 
+          backgroundColor: '#fff', 
+          padding: '15px', 
+          borderRadius: '5px', 
+          boxShadow: '0 2px 5px rgba(0,0,0,0.1)' 
+        }}>
+          <h4 style={{ marginTop: 0 }}>Field Trip Scheduled</h4>
+          <p>Our first field trip to the scent shop is scheduled for Week 3. Please sign up in the portal.</p>
         </div>
       </div>
     </Layout>
   );
 }
+
+// Disable server-side rendering to prevent potential errors
+export const config = {
+  runtime: 'client'
+};
