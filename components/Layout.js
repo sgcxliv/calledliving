@@ -52,7 +52,7 @@ export default function Layout({ children, title = 'Course Dashboard' }) {
         
         <Navbar user={user} />
         
-        <main style={{ marginBottom: '80px' }}>
+        <main style={{ marginBottom: '10px' }}>
           {children}
         </main>
         
