@@ -57,8 +57,8 @@ export default function Layout({ children, title = 'Course Dashboard' }) {
         </main>
         
         <div className="footer" style={{ 
-          marginTop: '40px',
-          paddingTop: '20px',
+          marginTop: '5px',
+          paddingTop: '5px',
           borderTop: '1px solid #eaeaea'
         }}>
           This site is managed by Stephanie Cho. Please email <a href="mailto:sgcxliv@stanford.edu">sgcxliv@stanford.edu</a> for any issues.
