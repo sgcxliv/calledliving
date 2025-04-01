@@ -48,33 +48,33 @@ export default function LifecyclePage() {
           <h1>Week {id}: {titles[id]}</h1>
         </header>
         
-        {/* Replace the old navbar with course-navbar styling */}
-        <nav className="course-navbar" style={{ marginBottom: '20px' }}>
-          <div 
-            className={`tab ${activeTab === 'theme' ? 'active-tab' : ''}`}
-            onClick={() => setActiveTab('theme')}
-          >
-            <span>Theme</span>
-          </div>
-          <div 
-            className={`tab ${activeTab === 'materials' ? 'active-tab' : ''}`}
-            onClick={() => setActiveTab('materials')}
-          >
-            <span>Materials</span>
-          </div>
-          <div 
-            className={`tab ${activeTab === 'assignment' ? 'active-tab' : ''}`}
-            onClick={() => setActiveTab('assignment')}
-          >
-            <span>Activity</span>
-          </div>
-          <div 
-            className={`tab ${activeTab === 'activity' ? 'active-tab' : ''}`}
-            onClick={() => setActiveTab('activity')}
-          >
-            <span>Upload</span>
-          </div>
-        </nav>
+        // {/* Replace the old navbar with course-navbar styling */}
+        // <nav className="course-navbar" style={{ marginBottom: '20px' }}>
+        //   <div 
+        //     className={`tab ${activeTab === 'theme' ? 'active-tab' : ''}`}
+        //     onClick={() => setActiveTab('theme')}
+        //   >
+        //     <span>Theme</span>
+        //   </div>
+        //   <div 
+        //     className={`tab ${activeTab === 'materials' ? 'active-tab' : ''}`}
+        //     onClick={() => setActiveTab('materials')}
+        //   >
+        //     <span>Materials</span>
+        //   </div>
+        //   <div 
+        //     className={`tab ${activeTab === 'assignment' ? 'active-tab' : ''}`}
+        //     onClick={() => setActiveTab('assignment')}
+        //   >
+        //     <span>Activity</span>
+        //   </div>
+        //   <div 
+        //     className={`tab ${activeTab === 'activity' ? 'active-tab' : ''}`}
+        //     onClick={() => setActiveTab('activity')}
+        //   >
+        //     <span>Upload</span>
+        //   </div>
+        // </nav>
         
         {/* Theme tab content */}
         <div id="theme" className={`tab-content ${activeTab === 'theme' ? 'active' : ''}`} style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
