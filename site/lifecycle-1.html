@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Dashboard</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Amiri', serif;
+            overflow: hidden;
+        }
+        
+        /* Main Website Content */
+        #main-content {
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        header {
+            background-image: url('images/weekone-background.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+        
+        /* Simplified navbar styles */
+        .navbar {
+            background-color: #444;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .navbar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+        
+        .navbar li {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .navbar a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .navbar a:hover {
+            background-color: #555;
+        }
+        
+        .navbar a.active {
+            background-color: #666;
+        }
+        
+        /* Tab content styles */
+       .tab-content {
+            display: none;
+            padding: 20px;
+            min-height: calc(100vh - 260px);
+            overflow: auto;
+            background-color: #f9f9f9;
+            position: relative;
+            padding-bottom: 60px; /* Add extra padding at the bottom */
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="main-content">
+        <header>
+            <h1>Week 1: The Life of Students</h1>
+        </header>
+        
+        <div class="navbar">
+            <ul>
+                <li><a href="#" class="active" onclick="openTab(event, 'theme')">Theme</a></li>
+                <li><a href="#" onclick="openTab(event, 'materials')">Materials</a></li>
+                <li><a href="#" onclick="openTab(event, 'assignment')">Activity</a></li>
+                <li><a href="#" onclick="openTab(event, 'activity')">Upload</a></li>
+            </ul>
+        </div>
+        
+        <!-- Theme tab content -->
+        <div id="theme" class="tab-content active">
+            <h2>What is Called Living, for Students?</h2>
+            <p>This section explores the central themes of "What is Called Living?" We take the fact of living for granted, as we should. Why focus on each breath if it just comes and goes without thinking? Or so we think. But the same logic need not apply to the idea of "life" itself.</p>
+            
+            <div style="margin-top: 30px;">
+                <h3>Questions to think about</h3>
+                <ul>
+                    <li>Exploration of various conceptions of "living" across cultures and time periods</li>
+                    <li>Critical reflection on contemporary modes of living</li>
+                    <li>Philosophical inquiry into the meaning and purpose of life</li>
+                    <li>Consideration of alternative perspectives on existence and being</li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 30px; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3>Weekly Focus Questions</h3>
+                <p>Each week, we'll explore a different facet of "living" through these guiding questions:</p>
+                <ol>
+                    <li>How do we define "living" in contrast to merely existing?</li>
+                    <li>What role does consciousness play in our understanding of life?</li>
+                    <li>How do different societies conceptualize the meaning of a good life?</li>
+                    <li>In what ways do our daily practices reflect or challenge our philosophical commitments?</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Materials tab content -->
+        <div id="materials" class="tab-content">
+            <h2>Course Materials</h2>
+            <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
+            
+            <div style="margin-top: 30px;">
+                <h3>Required Texts</h3>
+                <ul>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Nagel, Thomas. "What Is It Like to Be a Bat?"</a></li>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Camus, Albert. "The Myth of Sisyphus"</a></li>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Le Guin, Ursula K. "The Ones Who Walk Away from Omelas"</a></li>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Dostoyevsky, Fyodor. "Notes from Underground" (excerpts)</a></li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <h3>Films</h3>
+                <ul>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Kurosawa, Akira. "Ikiru" (1952)</a></li>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Malick, Terrence. "The Tree of Life" (2011)</a></li>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Kiarostami, Abbas. "Taste of Cherry" (1997)</a></li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <h3>Additional Resources</h3>
+                <ul>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Course Reader (PDF)</a></li>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Glossary of Philosophical Terms</a></li>
+                    <li><a href="#" style="color: #2596be; text-decoration: none;">Writing Guide for Philosophical Essays</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Assignment tab content -->
+        <div id="assignment" class="tab-content">
+            <h2>Assignments</h2>
+            <p>The following assignments will help you develop your understanding of the course themes and practice critical thinking and writing skills.</p>
+            
+            <div style="margin-top: 30px; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px;">
+                <h3>Task</h3>
+                <p>Upload a picture</p>
+                <p><strong>Due:</strong> Upload before Thursday's Class</p>
+                <p><strong>Submission Format:</strong> Image document uploaded to the course portal</p>
+            </div>
+        </div>
+        
+        <!-- Activity tab content with new upload grid -->
+        <div id="activity" class="tab-content">
+            <h2>Course Activities</h2>
+            <p>Beyond readings and traditional assignments, this course features several experiential learning activities to deepen your engagement with the material.</p>
+            
+            <!-- Upload Grid Section -->
+            <div style="margin-top: 30px; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px;">
+                <h3>Student Contributions</h3>
+                <p>Share your reflections, insights, and creative responses to our course materials. Upload images, videos, or text that represent your engagement with the week's theme.</p>
+                
+                <!-- Upload Form -->
+                <div style="margin-bottom: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+                    <h4>Add Your Contribution</h4>
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <input type="text" placeholder="Enter your name" style="flex: 1; padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <select style="padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                            <option value="text">Text</option>
+                        </select>
+                        <input type="file" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <textarea placeholder="Add a caption or description (optional)" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 60px;"></textarea>
+                    <button style="background-color: #2d4059; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Upload</button>
+                </div>
+                
+                <!-- Contribution Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add New Entry Box -->
+                    <div style="border: 2px dashed #ccc; border-radius: 5px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background-color: #f9f9f9;">
+                        <div style="font-size: 40px; color: #2d4059; margin-bottom: 10px;">+</div>
+                        <div style="color: #666;">Add your contribution</div>
+                    </div>
+                </div>
+
+            <!-- Original Activity Content -->
+            <div style="margin-top: 30px; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px;">
+                <h3>Field Trip: Scent Shop Experience</h3>
+                <p>We will visit a local artisanal perfumery to explore the relationship between sensory experience and memory, and how scent can evoke different conceptions of "living well."</p>
+                <p><strong>Date:</strong> Week 3</p>
+                <p><strong>Location:</strong> Essence of Life Perfumery (downtown)</p>
+                <p><strong>Preparation:</strong> Read assigned text on sensory philosophy and complete pre-visit reflection</p>
+            </div>
+            
+            <div style="background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px;">
+                <h3>Film Screenings and Discussions</h3>
+                <p>We will hold three evening film screenings throughout the semester, each followed by a facilitated discussion relating the film to course themes.</p>
+                <p><strong>Dates:</strong> Weeks 4, 8, and 11</p>
+                <p><strong>Location:</strong> Media Center, Room 120</p>
+                <p><strong>Requirement:</strong> Attendance at minimum two screenings, participation in discussion</p>
+            </div>
+            
+            <div style="background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3>Collective Vlogging Project</h3>
+                <p>Working in small groups, you will create weekly video logs documenting your exploration of different aspects of "living." These vlogs will be shared on our private course platform.</p>
+                <p><strong>Groups:</strong> Assigned Week 2</p>
+                <p><strong>Schedule:</strong> One submission every two weeks</p>
+                <p><strong>Format:</strong> 3-5 minute video exploring a specific aspect of "living" as discussed in class</p>
+            </div>
+
+    <script>
+        // Function to handle tab switching
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            // Remove 'active' class from all nav links
+            const navLinks = document.querySelectorAll('.navbar a');
+            for (let i = 0; i < navLinks.length; i++) {
+                navLinks[i].classList.remove('active');
+            }
+            
+            // Show the specific tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add 'active' class to the link that opened the tab
+            evt.currentTarget.classList.add('active');
+            
+            // Prevent default link behavior
+            evt.preventDefault();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+/* Tab content styles (continued) */
+.tab-content {
+  display: none;
+  padding: 20px;
+  min-height: calc(100vh - 230px);
+  overflow: auto;
+  background-color: #f9f9f9;
+  position: relative;
+  z-index: 1;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Footer styles */
+.footer {
+  background-color: #444;
+  color: white;
+  text-align: center;
+  padding: 10px 20px;
+  width: 100%;
+  font-size: 14px;
+  margin-top: 0px;
+}
+
+.footer a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Login Form Styles */
+.login-form {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.login-form h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-btn:hover {
+  background-color: #555;
+}
+
+/* Audio Message Area Styles */
+.messaging-container {
+  max-width: 800px;
+  margin: 20px auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.messaging-header {
+  background-color: #444;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.messaging-header h3 {
+  margin: 0;
+}
+
+.messaging-body {
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #888;
+  min-width: 80px;
+}
+
+.message-content {
+  flex-grow: 1;
+  margin-left: 10px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  position: relative;
+}
+
+.message-actions {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  display: none;
+}
+
+.message:hover .message-actions {
+  display: block;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #d9534f;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.messaging-footer {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  align-items: center;
+}
+
+.audio-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.audio-btn {
+  padding: 10px 15px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.audio-btn:hover {
+  background-color: #555;
+}
+
+.audio-btn i {
+  margin-right: 5px;
+}
+
+.timer {
+  margin-left: 15px;
+  color: #666;
+  font-size: 14px;
+}
+
+.audio-upload {
+  display: none;
+}
+
+.recording-indicator {
+  display: none;
+  color: #d9534f;
+  font-weight: bold;
+  margin-left: 15px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Back button */
+.back-btn {
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.back-btn:hover {
+  background-color: #555;
+}
+
+/* Student list */
+.student-list {
+  max-width: 600px;
+  margin: 40px auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.student-list h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.student-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.3s;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.student-item:last-child {
+  border-bottom: none;
+}
+
+.student-item:hover {
+  background-color: #f5f5f5;
+}
+
+.student-name {
+  font-weight: bold;
+}
+
+.new-message-indicator {
+  background-color: #d9534f;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+/* Error message */
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  text-align: center;
+}
