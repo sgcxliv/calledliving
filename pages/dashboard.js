@@ -4,6 +4,7 @@ import ProfessorView from '../components/ProfessorView';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -14,26 +15,28 @@ export default function Dashboard() {
   useEffect(() => {
     const getUser = async () => {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data } = await supabase.auth.getUser();
       
-      if (!user) {
-        router.push('/login');
+      if (!data || !data.user) {
+        // Not logged in
+        setLoading(false);
         return;
       }
       
-      setUser(user);
+      setUser(data.user);
       
       // Get user role from profiles table
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) {
+      try {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (error) throw error;
+        setUserRole(profileData?.role);
+      } catch (error) {
         console.error('Error fetching user role:', error);
-      } else {
-        setUserRole(data?.role);
       }
       
       setLoading(false);
@@ -48,6 +51,25 @@ export default function Dashboard() {
         <div className="tab-content active">
           <h2>Loading...</h2>
           <p>Please wait while we load your dashboard.</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // If not logged in, show login message
+  if (!user) {
+    return (
+      <Layout title="Course Dashboard - Access Required">
+        <div className="tab-content active">
+          <h2>Login Required</h2>
+          <p>You need to be logged in to access the audio messaging dashboard.</p>
+          <p>
+            <Link href="/login" legacyBehavior>
+              <a className="login-btn" style={{ display: 'inline-block', maxWidth: '200px', textAlign: 'center', marginTop: '20px' }}>
+                Go to Login
+              </a>
+            </Link>
+          </p>
         </div>
       </Layout>
     );
