@@ -50,14 +50,17 @@ export default function Layout({ children, title = 'Course Dashboard' }) {
           <h1>Course Dashboard</h1>
         </header>
         
-        {/* Only render Navbar once */}
         <Navbar user={user} />
         
-        <main>
+        <main style={{ marginBottom: '80px' }}>
           {children}
         </main>
         
-        <div className="footer">
+        <div className="footer" style={{ 
+          marginTop: '40px',
+          paddingTop: '20px',
+          borderTop: '1px solid #eaeaea'
+        }}>
           This site is managed by Stephanie Cho. Please email <a href="mailto:sgcxliv@stanford.edu">sgcxliv@stanford.edu</a> for any issues.
         </div>
       </div>
