@@ -20,27 +20,43 @@ export default function Navbar({ user }) {
     return router.pathname === path ? 'active-tab' : '';
   };
 
+  // Navigation helper function to handle clicks on the entire tab area
+  const navigateTo = (path) => {
+    if (path) router.push(path);
+  };
+
   return (
     <nav className="course-navbar">
-      <div className={`tab ${isActive('/')}`}>
-        <Link href="/">Main</Link>
+      {/* Regular tabs - the entire div is now clickable */}
+      <div 
+        className={`tab ${isActive('/')}`} 
+        onClick={() => navigateTo('/')}
+      >
+        <span className="w-full h-full block">Main</span>
       </div>
       
-      <div className={`tab ${isActive('/syllabus')}`}>
-        <Link href="/syllabus">Syllabus</Link>
+      <div 
+        className={`tab ${isActive('/syllabus')}`}
+        onClick={() => navigateTo('/syllabus')}
+      >
+        <span className="w-full h-full block">Syllabus</span>
       </div>
       
-      <div className={`tab ${isActive('/calendar')}`}>
-        <Link href="/calendar">Calendar</Link>
+      <div 
+        className={`tab ${isActive('/calendar')}`}
+        onClick={() => navigateTo('/calendar')}
+      >
+        <span className="w-full h-full block">Calendar</span>
       </div>
       
+      {/* Dropdown tab */}
       <div 
         className={`tab dropdown ${activeDropdown === 'lifeCycle' ? 'active-dropdown' : ''}`}
         onClick={() => toggleDropdown('lifeCycle')}
       >
-        <span>Life Cycle</span>
+        <span className="w-full h-full block">Life Cycle</span>
         {activeDropdown === 'lifeCycle' && (
-          <div className="dropdown-content">
+          <div className="dropdown-content" onClick={(e) => e.stopPropagation()}>
             {[
               '1. What is Called Living?',
               '2. Childhood, or The No-Place',
@@ -53,18 +69,26 @@ export default function Navbar({ user }) {
               '9. Untitled',
               '10. Untitled'
             ].map((topic, index) => (
-              <Link key={index} href={`/lifecycle/${index + 1}`}>
+              <div 
+                key={index} 
+                className="dropdown-item" 
+                onClick={() => navigateTo(`/lifecycle/${index + 1}`)}
+              >
                 {topic}
-              </Link>
+              </div>
             ))}
           </div>
         )}
       </div>
       
-      <div className={`tab ${isActive('/login') || isActive('/dashboard')}`}>
-        <Link href={user ? "/dashboard" : "/login"}>
+      {/* Login/Dashboard tab */}
+      <div 
+        className={`tab ${isActive('/login') || isActive('/dashboard')}`}
+        onClick={() => navigateTo(user ? "/dashboard" : "/login")}
+      >
+        <span className="w-full h-full block">
           {user ? 'Dashboard' : 'Login'}
-        </Link>
+        </span>
       </div>
     </nav>
   );
