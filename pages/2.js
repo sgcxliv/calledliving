@@ -1,7 +1,6 @@
-// pages/lifecycle/2.js
-import Layout from '../../components/Layout';
+import Layout from '../components/Layout';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 export default function ChildhoodPage() {
   const id = '2'; // Hardcoded for this specific page
@@ -24,7 +23,7 @@ export default function ChildhoodPage() {
     fetchSubmissions();
   }, []);
   
-  // Function to fetch submissions (same as previous page)
+  // Function to fetch submissions
   const fetchSubmissions = async () => {
     try {
       const { data, error } = await supabase
@@ -44,7 +43,7 @@ export default function ChildhoodPage() {
     }
   };
 
-  // Function to delete a submission (same as previous page)
+  // Function to delete a submission
   const handleDeleteSubmission = async (submissionId, filePath) => {
     if (!window.confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
       return;
@@ -70,8 +69,8 @@ export default function ChildhoodPage() {
         throw deleteError;
       }
       
-      // Remove the submission from local state
-      setSubmissions(submissions.filter(submission => submission.id !== submissionId));
+      // Refresh submissions to ensure full update
+      await fetchSubmissions();
       
     } catch (error) {
       console.error('Error deleting submission:', error);
@@ -79,7 +78,7 @@ export default function ChildhoodPage() {
     }
   };
 
-  // Handle file change (same as previous page)
+  // Handle file change
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
@@ -87,7 +86,7 @@ export default function ChildhoodPage() {
     }
   };
   
-  // Handle submission (same as previous page)
+  // Handle submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -203,7 +202,7 @@ export default function ChildhoodPage() {
         )}
 
         <header style={{
-          backgroundImage: `url('/images/weektwo-background.jpg')`, // You'd create a new background image
+          backgroundImage: `url('/images/weektwo-background.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           color: 'white',
@@ -216,7 +215,7 @@ export default function ChildhoodPage() {
           <h1>Week {id}: {titles[id]}</h1>
         </header>
         
-        {/* Theme Section - Customize for Week 2 */}
+        {/* Theme Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>Childhood: The No-Place</h2>
           <p>Childhood is often seen as a liminal space – neither here nor there, a realm of imagination and potentiality. This week, we explore childhood not as a preparatory stage, but as a complex, nuanced experience of being.</p>
@@ -232,7 +231,7 @@ export default function ChildhoodPage() {
           </div>
         </div>
         
-        {/* Materials Section - Customize for Week 2 */}
+        {/* Materials Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>Course Materials</h2>
           <p>The following materials are required for this week's exploration of childhood.</p>
@@ -262,7 +261,7 @@ export default function ChildhoodPage() {
           </div>
         </div>
         
-        {/* Assignment Section - Customize for Week 2 */}
+        {/* Assignment Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>Assignment: Childhood Memories</h2>
           <p>Create a visual or textual representation of a childhood memory that reveals something about space, imagination, or the complexity of childhood experience.</p>
@@ -275,8 +274,6 @@ export default function ChildhoodPage() {
           </div>
         </div>
 
-        {/* Rest of the component remains the same as the previous page (upload form and submissions section) */}
-        
         {/* Upload Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>Upload Your Contribution</h2>
@@ -294,13 +291,77 @@ export default function ChildhoodPage() {
             </div>
           )}
           
-          {/* Form remains the same as previous page */}
           <form onSubmit={handleSubmit} style={{ marginTop: '20px', padding: '15px', backgroundColor: '#fff', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-            {/* ... (same form code as previous page) ... */}
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="name" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Your Name</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="mediaType" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Media Type</label>
+              <select
+                id="mediaType"
+                value={mediaType}
+                onChange={(e) => setMediaType(e.target.value)}
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+              >
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="text">Text</option>
+              </select>
+            </div>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="file" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>File</label>
+              <input
+                id="file"
+                type="file"
+                onChange={handleFileChange}
+                required
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="caption" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Caption or Description</label>
+              <textarea
+                id="caption"
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', minHeight: '100px' }}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              disabled={uploading}
+              style={{ 
+                backgroundColor: uploading ? '#999' : '#2d4059', 
+                color: 'white', 
+                border: 'none', 
+                padding: '10px 15px', 
+                borderRadius: '4px', 
+                cursor: uploading ? 'not-allowed' : 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              {uploading ? 'Uploading...' : 'Submit Contribution'}
+            </button>
           </form>
         </div>
         
-        {/* Submissions Section */}
+        {/* Class Submissions Section */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>Class Submissions</h2>
           
@@ -309,7 +370,88 @@ export default function ChildhoodPage() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }}>
               {submissions.map((submission) => (
-                // ... (same submission rendering code as previous page)
+                <div key={submission.id} style={{ 
+                  backgroundColor: '#fff', 
+                  borderRadius: '8px', 
+                  overflow: 'hidden', 
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                  position: 'relative'
+                }}>
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => handleDeleteSubmission(submission.id, submission.file_path)}
+                    style={{ 
+                      position: 'absolute', 
+                      top: '10px', 
+                      right: '10px', 
+                      backgroundColor: '#dc3545', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '4px', 
+                      padding: '5px 10px',
+                      cursor: 'pointer',
+                      zIndex: 10
+                    }}
+                  >
+                    Delete
+                  </button>
+                  
+                  <div style={{ padding: '12px 15px', borderBottom: '1px solid #eee', backgroundColor: '#f9f9f9' }}>
+                    <p style={{ fontWeight: 'bold', margin: '0', fontSize: '16px' }}>{submission.contributor_name}</p>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
+                      {new Date(submission.created_at).toLocaleDateString()} {new Date(submission.created_at).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  
+                  {submission.media_type === 'image' && (
+                    <div 
+                      style={{ 
+                        width: '100%', 
+                        height: '220px', 
+                        overflow: 'hidden',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => {
+                        const imageUrl = `${supabase.storage.from('contributions').getPublicUrl(submission.file_path).data.publicUrl}`;
+                        setEnlargedImage(imageUrl);
+                      }}
+                    >
+                      <img 
+                        src={`${supabase.storage.from('contributions').getPublicUrl(submission.file_path).data.publicUrl}`}
+                        alt={submission.caption} 
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease',
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  {submission.media_type === 'video' && (
+                    <div style={{ width: '100%', height: '220px' }}>
+                      <video 
+                        src={`${supabase.storage.from('contributions').getPublicUrl(submission.file_path).data.publicUrl}`}
+                        controls
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  )}
+                  
+                  {submission.media_type === 'text' && (
+                    <div style={{ padding: '15px', backgroundColor: '#f9f9f9', height: '180px', overflow: 'auto' }}>
+                      <p style={{ whiteSpace: 'pre-wrap' }}>{submission.caption}</p>
+                    </div>
+                  )}
+                  
+                  {/* Only show caption separately for image and video */}
+                  {(submission.media_type === 'image' || submission.media_type === 'video') && (
+                    <div style={{ padding: '15px' }}>
+                      <p style={{ margin: '0', fontSize: '14px', lineHeight: '1.5' }}>{submission.caption}</p>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -317,4 +459,4 @@ export default function ChildhoodPage() {
       </div>
     </Layout>
   );
-}
+}// pages/2.js
