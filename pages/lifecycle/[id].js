@@ -33,7 +33,7 @@ export default function LifecyclePage() {
 
   return (
     <Layout title={`Course Dashboard - Week ${id}: ${titles[id]}`}>
-      <div style={{ width: '100%' }}>
+      <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         <header style={{
           backgroundImage: `url('/images/weekone-background.jpg')`,
           backgroundSize: 'cover',
@@ -41,54 +41,43 @@ export default function LifecyclePage() {
           color: 'white',
           padding: '40px 20px',
           textAlign: 'center',
-          textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
+          textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
+          borderRadius: '8px',
+          marginBottom: '20px'
         }}>
           <h1>Week {id}: {titles[id]}</h1>
         </header>
         
-        <div className="navbar">
-          <ul>
-            <li>
-              <a
-                href="#"
-                className={activeTab === 'theme' ? 'active' : ''}
-                onClick={(e) => { e.preventDefault(); setActiveTab('theme'); }}
-              >
-                Theme
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className={activeTab === 'materials' ? 'active' : ''}
-                onClick={(e) => { e.preventDefault(); setActiveTab('materials'); }}
-              >
-                Materials
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className={activeTab === 'assignment' ? 'active' : ''}
-                onClick={(e) => { e.preventDefault(); setActiveTab('assignment'); }}
-              >
-                Activity
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className={activeTab === 'activity' ? 'active' : ''}
-                onClick={(e) => { e.preventDefault(); setActiveTab('activity'); }}
-              >
-                Upload
-              </a>
-            </li>
-          </ul>
-        </div>
+        {/* Replace the old navbar with course-navbar styling */}
+        <nav className="course-navbar" style={{ marginBottom: '20px' }}>
+          <div 
+            className={`tab ${activeTab === 'theme' ? 'active-tab' : ''}`}
+            onClick={() => setActiveTab('theme')}
+          >
+            <span>Theme</span>
+          </div>
+          <div 
+            className={`tab ${activeTab === 'materials' ? 'active-tab' : ''}`}
+            onClick={() => setActiveTab('materials')}
+          >
+            <span>Materials</span>
+          </div>
+          <div 
+            className={`tab ${activeTab === 'assignment' ? 'active-tab' : ''}`}
+            onClick={() => setActiveTab('assignment')}
+          >
+            <span>Activity</span>
+          </div>
+          <div 
+            className={`tab ${activeTab === 'activity' ? 'active-tab' : ''}`}
+            onClick={() => setActiveTab('activity')}
+          >
+            <span>Upload</span>
+          </div>
+        </nav>
         
         {/* Theme tab content */}
-        <div id="theme" className={`tab-content ${activeTab === 'theme' ? 'active' : ''}`}>
+        <div id="theme" className={`tab-content ${activeTab === 'theme' ? 'active' : ''}`} style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
           <h2>What is Called Living, for Students?</h2>
           <p>This section explores the central themes of "What is Called Living?" We take the fact of living for granted, as we should. Why focus on each breath if it just comes and goes without thinking? Or so we think. But the same logic need not apply to the idea of "life" itself.</p>
           
@@ -115,7 +104,7 @@ export default function LifecyclePage() {
         </div>
         
         {/* Materials tab content */}
-        <div id="materials" className={`tab-content ${activeTab === 'materials' ? 'active' : ''}`}>
+        <div id="materials" className={`tab-content ${activeTab === 'materials' ? 'active' : ''}`} style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
           <h2>Course Materials</h2>
           <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
           
@@ -140,7 +129,7 @@ export default function LifecyclePage() {
         </div>
         
         {/* Assignment tab content */}
-        <div id="assignment" className={`tab-content ${activeTab === 'assignment' ? 'active' : ''}`}>
+        <div id="assignment" className={`tab-content ${activeTab === 'assignment' ? 'active' : ''}`} style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
           <h2>Assignments</h2>
           <p>The following assignments will help you develop your understanding of the course themes and practice critical thinking and writing skills.</p>
           
@@ -153,7 +142,7 @@ export default function LifecyclePage() {
         </div>
         
         {/* Activity tab content */}
-        <div id="activity" className={`tab-content ${activeTab === 'activity' ? 'active' : ''}`}>
+        <div id="activity" className={`tab-content ${activeTab === 'activity' ? 'active' : ''}`} style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
           <h2>Course Activities</h2>
           <p>Beyond readings and traditional assignments, this course features several experiential learning activities to deepen your engagement with the material.</p>
           
