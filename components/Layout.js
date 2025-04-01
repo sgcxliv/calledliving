@@ -2,27 +2,15 @@ import Head from 'next/head';
 import Navbar from './Navbar';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useRouter } from 'next/router';
 
 export default function Layout({ children, title = 'Course Dashboard' }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
-    // Safe way to get user on page load
+    // Get current user in a safe way
     const getUser = async () => {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        // Only set user if data exists and has user property
-        if (data && data.user) {
-          setUser(data.user);
-        }
-      } catch (error) {
-        console.error('Auth error:', error);
-      } finally {
-        setLoading(false);
-      }
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user || null);
     };
 
     getUser();
