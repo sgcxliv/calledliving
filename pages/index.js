@@ -1,7 +1,21 @@
 import Layout from '../components/Layout';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 export default function Home() {
+  const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    // Safely get current user
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user || null);
+    };
+    
+    getUser();
+  }, []);
+
   return (
     <Layout title="Course Dashboard - Home">
       <div className="tab-content active">
