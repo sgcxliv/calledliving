@@ -1,11 +1,10 @@
-// pages/lifecycle/[id]/upload.js
-import LifecycleLayout from '../../../components/LifecycleLayout';
+// pages/lifecycle/[id].js
+import Layout from '../../components/Layout';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
-import { uploadFileToSupabase, saveContributionMetadata } from '../../../utils/fileUpload';
+import { useState } from 'react';
+import { supabase } from '../../lib/supabaseClient';
 
-export default function LifecycleUpload() {
+export default function LifecyclePage() {
   const router = useRouter();
   const { id } = router.query;
   const [name, setName] = useState('');
@@ -16,14 +15,34 @@ export default function LifecycleUpload() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   
-  if (!id) {
-    return <div>Loading...</div>;
+  const titles = {
+    '1': 'What is Called Living?',
+    '2': 'Childhood, or The No-Place',
+    '3': 'Real Life, or, The Workplace',
+    '4': 'Nightlife, or, The Dark Side',
+    '5': 'Untitled',
+    '6': 'Untitled',
+    '7': 'Untitled',
+    '8': 'Untitled',
+    '9': 'Untitled',
+    '10': 'Untitled',
+  };
+
+  if (!id || !titles[id]) {
+    return (
+      <Layout title="Course Dashboard - Not Found">
+        <div className="tab-content active">
+          <h2>Page Not Found</h2>
+          <p>The requested lifecycle page does not exist.</p>
+        </div>
+      </Layout>
+    );
   }
   
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setError(null); // Clear any previous errors
+      setError(null);
     }
   };
   
@@ -39,32 +58,36 @@ export default function LifecycleUpload() {
       setUploading(true);
       setError(null);
       
-      // 1. Upload file to Supabase Storage
-      const { path, error: uploadError } = await uploadFileToSupabase(
-        file, 
-        mediaType, 
-        id,
-        supabase
-      );
+      // Generate file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${id}/${mediaType}/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('contributions')
+        .upload(filePath, file);
         
       if (uploadError) {
-        throw new Error(uploadError);
+        throw uploadError;
       }
       
-      // 2. Save metadata to Supabase database
-      const { error: metadataError } = await saveContributionMetadata({
-        week_id: id,
-        contributor_name: name,
-        media_type: mediaType,
-        caption: caption,
-        file_path: path,
-        file_size: file.size,
-        file_type: file.type,
-        created_at: new Date()
-      }, supabase);
+      // Save metadata to database
+      const { error: insertError } = await supabase
+        .from('student_contributions')
+        .insert({
+          week_id: id,
+          contributor_name: name,
+          media_type: mediaType,
+          caption: caption,
+          file_path: filePath,
+          file_size: file.size,
+          file_type: file.type,
+          created_at: new Date()
+        });
         
-      if (metadataError) {
-        throw new Error(metadataError);
+      if (insertError) {
+        throw insertError;
       }
       
       // Success!
@@ -74,10 +97,10 @@ export default function LifecycleUpload() {
       setCaption('');
       setFile(null);
       
-      // Reload the page after 2 seconds to show the new contribution
+      // Clear success message after 3 seconds
       setTimeout(() => {
-        router.reload();
-      }, 2000);
+        setSuccess(false);
+      }, 3000);
       
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -88,98 +111,154 @@ export default function LifecycleUpload() {
   };
 
   return (
-    <LifecycleLayout id={id} title="Upload" activeTab="upload">
-      <h2>Course Activities</h2>
-      <p>Beyond readings and traditional assignments, this course features several experiential learning activities to deepen your engagement with the material.</p>
-      
-      {/* Upload Grid Section */}
-      <div style={{ marginTop: '30px', backgroundColor: '#fff', padding: '20px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '25px' }}>
-        <h3>Student Contributions</h3>
-        <p>Share your reflections, insights, and creative responses to our course materials. Upload images, videos, or text that represent your engagement with the week's theme.</p>
+    <Layout title={`Course Dashboard - Week ${id}: ${titles[id]}`}>
+      <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+        <header style={{
+          backgroundImage: `url('/images/weekone-background.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          color: 'white',
+          padding: '40px 20px',
+          textAlign: 'center',
+          textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
+          borderRadius: '8px',
+          marginBottom: '20px'
+        }}>
+          <h1>Week {id}: {titles[id]}</h1>
+        </header>
         
-        {success && (
-          <div style={{ padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '15px' }}>
-            Your contribution has been uploaded successfully!
-          </div>
-        )}
-        
-        {error && (
-          <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '15px' }}>
-            {error}
-          </div>
-        )}
-        
-        {/* Upload Form */}
-        <form onSubmit={handleSubmit} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
-          <h4>Add Your Contribution</h4>
-          <div style={{ marginBottom: '10px' }}>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              disabled={uploading}
-              style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-            />
-          </div>
-          <div style={{ display: 'flex', marginBottom: '10px' }}>
-            <select
-              value={mediaType}
-              onChange={(e) => setMediaType(e.target.value)}
-              disabled={uploading}
-              style={{ padding: '8px', marginRight: '10px', border: '1px solid #ddd', borderRadius: '4px', width: '120px' }}
-            >
-              <option value="image">Image</option>
-              <option value="video">Video</option>
-              <option value="text">Text</option>
-            </select>
-            <input
-              type="file"
-              onChange={handleFileChange}
-              required
-              disabled={uploading}
-              style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-            />
-          </div>
-          <textarea
-            placeholder="Add a caption or description (optional)"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            disabled={uploading}
-            style={{ width: '100%', padding: '8px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', minHeight: '60px' }}
-          ></textarea>
-          <button
-            type="submit"
-            disabled={uploading}
-            style={{ 
-              backgroundColor: uploading ? '#999' : '#2d4059', 
-              color: 'white', 
-              border: 'none', 
-              padding: '8px 15px', 
-              borderRadius: '4px', 
-              cursor: uploading ? 'not-allowed' : 'pointer' 
-            }}
-          >
-            {uploading ? 'Uploading...' : 'Upload'}
-          </button>
-        </form>
-        
-        {/* Gallery Section */}
-        <h4 style={{ marginTop: '30px' }}>Class Contributions</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px', marginTop: '15px' }}>
-          {/* This would be populated with actual contributions from students */}
-          <div style={{ border: '1px solid #ddd', borderRadius: '5px', overflow: 'hidden', height: '200px', backgroundColor: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ color: '#666', textAlign: 'center', padding: '15px' }}>Student contributions will appear here.</p>
-          </div>
+        {/* Theme Section */}
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+          <h2>What is Called Living, for Students?</h2>
+          <p>This section explores the central themes of "What is Called Living?" We take the fact of living for granted, as we should. Why focus on each breath if it just comes and goes without thinking? Or so we think. But the same logic need not apply to the idea of "life" itself.</p>
           
-          {/* Placeholder for new uploads */}
-          <div style={{ border: '2px dashed #ccc', borderRadius: '5px', height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: '#f9f9f9' }}>
-            <div style={{ fontSize: '40px', color: '#2d4059', marginBottom: '10px' }}>+</div>
-            <div style={{ color: '#666' }}>Add your contribution</div>
+          <div style={{ marginTop: '30px' }}>
+            <h3>Questions to think about</h3>
+            <ul>
+              <li>Exploration of various conceptions of "living" across cultures and time periods</li>
+              <li>Critical reflection on contemporary modes of living</li>
+              <li>Philosophical inquiry into the meaning and purpose of life</li>
+              <li>Consideration of alternative perspectives on existence and being</li>
+            </ul>
           </div>
         </div>
+        
+        {/* Materials Section */}
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+          <h2>Course Materials</h2>
+          <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
+          
+          <div style={{ marginTop: '30px' }}>
+            <h3>Required Texts</h3>
+            <ul>
+              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Nagel, Thomas. "What Is It Like to Be a Bat?"</a></li>
+              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Camus, Albert. "The Myth of Sisyphus"</a></li>
+              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Le Guin, Ursula K. "The Ones Who Walk Away from Omelas"</a></li>
+              <li><a href="#" style={{ color: '#2596be', textDecoration: 'none' }}>Dostoyevsky, Fyodor. "Notes from Underground" (excerpts)</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        {/* Assignment Section */}
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+          <h2>Assignment</h2>
+          <p>Upload a picture that represents your interpretation of "living" as discussed in this week's readings.</p>
+          
+          <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+            <h3>Task</h3>
+            <p>Upload a picture</p>
+            <p><strong>Due:</strong> Upload before Thursday's Class</p>
+            <p><strong>Submission Format:</strong> Image document uploaded to the course portal</p>
+          </div>
+        </div>
+        
+        {/* Upload Section */}
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+          <h2>Upload Your Contribution</h2>
+          <p>Share your reflections, insights, and creative responses to our course materials.</p>
+          
+          {success && (
+            <div style={{ padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '15px' }}>
+              Your contribution has been uploaded successfully!
+            </div>
+          )}
+          
+          {error && (
+            <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '15px' }}>
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} style={{ marginTop: '20px', padding: '15px', backgroundColor: '#fff', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="name" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Your Name</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="mediaType" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Media Type</label>
+              <select
+                id="mediaType"
+                value={mediaType}
+                onChange={(e) => setMediaType(e.target.value)}
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+              >
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="text">Text</option>
+              </select>
+            </div>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="file" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>File</label>
+              <input
+                id="file"
+                type="file"
+                onChange={handleFileChange}
+                required
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label htmlFor="caption" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Caption or Description</label>
+              <textarea
+                id="caption"
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                disabled={uploading}
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', minHeight: '100px' }}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              disabled={uploading}
+              style={{ 
+                backgroundColor: uploading ? '#999' : '#2d4059', 
+                color: 'white', 
+                border: 'none', 
+                padding: '10px 15px', 
+                borderRadius: '4px', 
+                cursor: uploading ? 'not-allowed' : 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              {uploading ? 'Uploading...' : 'Submit Contribution'}
+            </button>
+          </form>
+        </div>
       </div>
-    </LifecycleLayout>
+    </Layout>
   );
 }
