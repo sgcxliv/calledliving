@@ -19,16 +19,16 @@ export default function Home() {
   return (
     <Layout title="Course Dashboard - Home">
       <div className="tab-content active">
-        <h2>Welcome to "What is Called Living?"</h2>
-        <p>This is the main landing page for our course. Use the navigation tabs above to explore different sections of the course site.</p>
+        <h2>Welcome to RELIGST18N: What is Called Living?</h2>
+        <p>Here you will find everything you need for the class. 
+    The site will continue to update as we progress, so please keep an eye out for changes. 
+    The nature of this class is spontaneous, so we count on you to stay informed. Weekly pages will be published one week in advance. </p>
         
         <div style={{ marginTop: '30px' }}>
-          <h3>Course Highlights</h3>
+          <h3>Where are we?</h3>
           <ul>
-            <li>Explore the concept of "living" through various lenses</li>
-            <li>Engage in field trips, films, readings, and discussions</li>
-            <li>Develop critical thinking skills through philosophical inquiry</li>
-            <li>Participate in collective writing and self-examination activities</li>
+            <li>Today, we are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
+            <li>Is Anything Due Today? No. </li>
           </ul>
         </div>
         
@@ -40,7 +40,7 @@ export default function Home() {
           </div>
           <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
             <h4 style={{ marginTop: 0 }}>Field Trip Scheduled</h4>
-            <p>Our first out-of-class activity is scheduled for Week 2, at the Bing Nursery School. Directions Here. Please sign up using this link.</p>
+            <p>Our first out-of-class activity is scheduled for Week 2, at the Bing Nursery School. Signup link coming soon. </p>
           </div>
         </div>
       </div>
