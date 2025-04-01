@@ -1,63 +1,68 @@
-.navbar {
-  background-color: #444;
-  display: flex;
-  position: relative;
-}
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { supabase } from '../lib/supabaseClient';
 
-.navbar ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  width: 100%;
-}
+export default function Navbar({ user }) {
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const router = useRouter();
 
-.navbar li {
-  flex: 1;
-  position: relative;
-}
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
-.navbar li > a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-  transition: background-color 0.3s;
-}
+  const toggleDropdown = (dropdownName) => {
+    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+  };
 
-.navbar li > a:hover,
-.navbar li > a.active {
-  background-color: #666;
-}
-
-.dropdown {
-  position: relative;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #555;
-  width: 100%;
-  left: 0;
-  top: 100%;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  z-index: 1000;
-}
-
-.dropdown.active .dropdown-content {
-  display: block;
-}
-
-.dropdown-content a {
-  display: block;
-  color: white;
-  padding: 12px 16px;
-  text-decoration: none;
-  text-align: left;
-}
-
-.dropdown-content a:hover {
-  background-color: #666;
+  return (
+    <div className="navbar">
+      <ul>
+        <li>
+          <Link href="/" className={router.pathname === '/' ? 'active' : ''}>
+            Main
+          </Link>
+        </li>
+        <li>
+          <Link href="/syllabus" className={router.pathname === '/syllabus' ? 'active' : ''}>
+            Syllabus
+          </Link>
+        </li>
+        <li>
+          <Link href="/calendar" className={router.pathname === '/calendar' ? 'active' : ''}>
+            Calendar
+          </Link>
+        </li>
+        <li className={`dropdown ${activeDropdown === 'lifeCycle' ? 'active' : ''}`}>
+          <a href="#" onClick={() => toggleDropdown('lifeCycle')}>Life Cycle</a>
+          <div className="dropdown-content">
+            {[
+              '1. What is Called Living?',
+              '2. Childhood, or The No-Place',
+              '3. Real Life, or, The Workplace',
+              '4. Nightlife, or, The Dark Side',
+              '5. Untitled',
+              '6. Untitled',
+              '7. Untitled',
+              '8. Untitled',
+              '9. Untitled',
+              '10. Untitled'
+            ].map((topic, index) => (
+              <Link key={index} href={`/lifecycle/${index + 1}`}>
+                {topic}
+              </Link>
+            ))}
+          </div>
+        </li>
+        <li>
+          <Link href={user ? "/dashboard" : "/login"} 
+            className={router.pathname === '/login' || router.pathname === '/dashboard' ? 'active' : ''}
+          >
+            {user ? 'Dashboard' : 'Login'}
+          </Link>
+        </li>
+      </ul>
+    </div>
+  );
 }
