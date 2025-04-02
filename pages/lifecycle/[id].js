@@ -361,22 +361,18 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
           <>
             {/* Assignment Section */}
             <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-              <h2>Assignment: Task</h2>
+              <h2>Assignment: Photo Upload Task</h2>
               <p>Upload a picture of you and your family which means something to you and which you'd be open to discussing with the class.</p>
               
               <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                <h3>Task</h3>
-                <p>Upload Your Photo Here. </p>
                 <p><strong>Due:</strong> Before Class on Tuesday (1:30 PM, April 8th)</p>
-                <p><strong>Submission Format:</strong> Image, with a short optional caption if you wish to provide some context.</p>
+                <p><strong>Submission Format:</strong> Image, with a short caption if you wish to provide some context (optional).</p>
               </div>
             </div>
             
             {/* Upload Section */}
             <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-              <h2>Upload Your Contribution</h2>
-              <p>Share your reflections on childhood spaces and how they shaped your identity.</p>
-              
+              <h2>Upload Your Contribution</h2>              
               {success && (
                 <div style={{ padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '15px' }}>
                   Your contribution has been uploaded successfully!
