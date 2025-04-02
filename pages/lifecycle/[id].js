@@ -59,7 +59,7 @@ export default function LifecyclePage() {
     ],
     '2': [
       {
-        title: 'Ulanowicz, Anastasia. "Summary of Phillip Aries’ Centuries of Childhood"',
+        title: 'Ulanowicz, Anastasia. "Summary of Phillip Aries' Centuries of Childhood"',
         path: '/readings/ulanowicz.pdf'
       },
       {
@@ -79,6 +79,8 @@ export default function LifecyclePage() {
   // Function to fetch submissions
   const fetchSubmissions = async () => {
     try {
+      console.log('Fetching submissions for week:', id);
+      
       const { data, error } = await supabase
         .from('student_contributions')
         .select('*')
@@ -90,13 +92,14 @@ export default function LifecyclePage() {
         return;
       }
       
+      console.log('Fetched submissions:', data?.length || 0);
       setSubmissions(data || []);
     } catch (error) {
-      console.error('Error fetching submissions:', error);
+      console.error('Error in fetch operation:', error);
     }
   };
 
-  // Function to delete a submission
+  // Function to delete a submission - FIXED
   const handleDeleteSubmission = async (submissionId, filePath) => {
     if (!window.confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
       return;
@@ -104,30 +107,41 @@ export default function LifecyclePage() {
 
     try {
       setIsDeleting(true);
-      // Delete the file from storage
-      const { error: storageError } = await supabase.storage
-        .from('contributions')
-        .remove([filePath]);
+      setError(null);
       
-      if (storageError) {
-        throw storageError;
-      }
+      console.log('Starting deletion for ID:', submissionId, 'Path:', filePath);
       
-      // Delete the database record
-      const { error: deleteError } = await supabase
+      // Step 1: Delete the database record first
+      const { data: deleteData, error: deleteError } = await supabase
         .from('student_contributions')
         .delete()
         .eq('id', submissionId);
       
       if (deleteError) {
+        console.error('Database deletion error:', deleteError);
         throw deleteError;
       }
       
-      // Refresh submissions from server instead of manipulating local state
-      await fetchSubmissions();
+      console.log('Database deletion successful');
       
+      // Step 2: Delete the file from storage
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('contributions')
+        .remove([filePath]);
+      
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+        console.warn('File deletion failed but database record was removed');
+      } else {
+        console.log('Storage deletion successful');
+      }
+      
+      // Step 3: Update local state immediately
+      setSubmissions(prevSubmissions => 
+        prevSubmissions.filter(submission => submission.id !== submissionId)
+      );
     } catch (error) {
-      console.error('Error deleting submission:', error);
+      console.error('Error in delete operation:', error);
       setError('Error deleting submission: ' + (error.message || 'Unknown error'));
     } finally {
       setIsDeleting(false);
@@ -317,7 +331,7 @@ export default function LifecyclePage() {
             {/* Assignment Section */}
             <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
               <h2>Assignment: Task</h2>
-              <p>Upload a picture of you and your family which means something to you and which you’d be open to discussing with the class.</p>
+              <p>Upload a picture of you and your family which means something to you and which you'd be open to discussing with the class.</p>
               
               <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                 <h3>Task</h3>
