@@ -25,10 +25,11 @@ export default function Home() {
     The nature of this class is spontaneous, so we count on you to stay informed. Weekly pages will be published one week in advance. </p>
         
         <div style={{ marginTop: '30px' }}>
-          <h3>Where are we?</h3>
+          <h3>This Week: The Life of Students. Where are we?</h3>
           <ul>
-            <li>Today, we are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
-            <li>Is Anything Due Today? No. </li>
+            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA WEST 464</li>
+            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, GREEN LIBRARY WEST STACKS, infront of Call Number: B3209 .B584 F75</li>
+            <li>TO-DO for Next Week: Bing Nursery Signups, Family Photo Upload</li>
           </ul>
         </div>
         
