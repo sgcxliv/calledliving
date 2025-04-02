@@ -17,7 +17,7 @@ export default function Syllabus() {
             <div>
               <h4 style={{ marginTop: 0, marginBottom: '5px' }}>Professor Rushain Abbasi</h4>
               <p style={{ margin: 0 }}><a href="mailto:rushain@stanford.edu" style={{ color: '#2d4059', textDecoration: 'none' }}>rushain@stanford.edu</a></p>
-              <p style={{ marginTop: '5px', fontSize: '0.9em' }}>Office Hours: TBD</p>
+              <p style={{ marginTop: '5px', fontSize: '0.9em' }}>Office Hours: <a href="https://docs.google.com/document/d/1q4_X2U9tknhlK0T92BYQdOfwTtFh2Nb3pNnqYaW0ruQ/edit?tab=t.0">Sign-Ups</a></p>
             </div>
           </div>
           
