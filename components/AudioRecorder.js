@@ -7,6 +7,7 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
   const [audioChunks, setAudioChunks] = useState([]);
   const mediaRecorderRef = useRef(null);
   const timerIntervalRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     // Clean up on unmount
@@ -143,6 +144,11 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
     e.target.value = '';
   };
 
+  const handleUploadClick = () => {
+    // Trigger the hidden file input
+    fileInputRef.current.click();
+  };
+
   return (
     <div className="messaging-footer">
       <div className="audio-controls">
@@ -157,17 +163,20 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
         
         <button
           className="audio-btn"
-          onClick={() => document.getElementById('audio-upload').click()}
+          onClick={handleUploadClick}
         >
           <i>📎</i> Upload Audio
         </button>
         
+        {/* Hidden file input - controlled by the Upload Audio button */}
         <input
           type="file"
+          ref={fileInputRef}
           id="audio-upload"
           className="audio-upload"
           accept="audio/*"
           onChange={handleFileUpload}
+          style={{ display: 'none' }} // Hide this input element
         />
         
         {isRecording && (
