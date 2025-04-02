@@ -59,7 +59,7 @@ export default function LifecyclePage() {
     ],
     '2': [
       {
-        title: 'Ulanowicz, Anastasia. "Summary of Phillip Aries' Centuries of Childhood"',
+        title: 'Ulanowicz, Anastasia. "Summary of Centuries of Childhood by Phillip Aries"',
         path: '/readings/ulanowicz.pdf'
       },
       {
