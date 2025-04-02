@@ -64,7 +64,7 @@ export default function Syllabus() {
         </ul>
                      <h3>Exams (Final + Miderm)</h3>
         <ul>
-          <li>The final exam will consist of a final task that will be commissioned to you all as a collective to be completed within the standard timespan of a final (3 hours). The Midterm is a Dinner linked to a creative writing task. If you show up and participate you will get an A. 
+          <li>The Midterm is a Dinner linked to a creative writing task. The Final Exam will consist of a final task that will be commissioned to you all as a collective to be completed within the standard timespan of a final (3 hours).  If you show up and participate you will get an A. 
 </li>
         </ul>
             
