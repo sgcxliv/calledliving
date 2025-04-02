@@ -37,11 +37,12 @@ export default function Home() {
           <h3>Announcements</h3>
           <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '15px' }}>
             <h4 style={{ marginTop: 0 }}>Welcome to the Course!</h4>
-            <p>Please review the syllabus and complete the introductory reading by next week.</p>
+            <p>Please review the syllabus and complete assigned readings for this week.</p>
           </div>
           <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
             <h4 style={{ marginTop: 0 }}>Field Trip Scheduled</h4>
-            <p>Our first out-of-class activity is scheduled for Week 2, at the Bing Nursery School. Signup link coming soon. </p>
+            <p>Our first activity will be completed outside of class time at the Bing Nursery School, located at 850 Escondido Rd, Stanford, CA 94305</p>
+        <a href="https://forms.gle/4ApEAJ7dqhKjTPKN6.">Signup Link</a>
           </div>
         </div>
       </div>
