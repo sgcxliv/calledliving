@@ -3,7 +3,6 @@ import Layout from '../../components/Layout';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import Link from 'next/link';
 
 export default function LifecyclePage() {
   const router = useRouter();
@@ -76,27 +75,6 @@ export default function LifecyclePage() {
               </li>
             </ul>
           </div>
-        </div>
-        
-        {/* Link to upload page */}
-        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px', textAlign: 'center' }}>
-          <Link href={`/lifecycle/upload/${id}`} passHref>
-            <button
-              style={{ 
-                backgroundColor: '#2d4059', 
-                color: 'white', 
-                border: 'none', 
-                padding: '12px 20px', 
-                borderRadius: '4px', 
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              Go to Assignment & Upload Page
-            </button>
-          </Link>
         </div>
       </div>
     </Layout>
