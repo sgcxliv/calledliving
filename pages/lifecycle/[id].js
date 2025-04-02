@@ -41,7 +41,7 @@ export default function LifecyclePage() {
     },
     '2': {
       title: 'Childhood as a No-place',
-      description: 'This section explores childhood as a liminal space - what Agamben calls a "no-place." Childhood exists as both a historical phase and a mythical construct, a space where imagination and reality blur. We examine how childhood functions as both memory and possibility.',
+      description: 'Childhood exists as both a historical phase and a mythical construct, a space where imagination and reality blur. We examine how childhood functions as both memory and possibility.',
       questions: [
         'How is childhood constructed as both a physical and metaphysical space?',
         'What is the relationship between childhood memory and adult identity?',
@@ -59,12 +59,12 @@ export default function LifecyclePage() {
     ],
     '2': [
       {
-        title: 'Agamben, Giorgio. "Childhood, or the No-place"',
-        path: '/readings/childhood.pdf'
+        title: 'Ulanowicz, Anastasia. "Summary of Phillip Aries’ Centuries of Childhood"',
+        path: '/readings/ulanowicz.pdf'
       },
       {
-        title: 'Bachelard, Gaston. "Excerpts from The Poetics of Space"',
-        path: '/readings/bachelard.pdf'
+        title: 'Huizinga, Johan. "Nature and Significance of Play as a Cultural Phenomenon"',
+        path: '/readings/huizinga.pdf'
       }
     ]
   };
@@ -139,7 +139,7 @@ export default function LifecyclePage() {
       <Layout title="Course Dashboard - Not Found">
         <div className="tab-content active">
           <h2>Page Not Found</h2>
-          <p>The requested lifecycle page does not exist.</p>
+          <p>The requested lifecycle page has yet to be published.</p>
         </div>
       </Layout>
     );
@@ -291,7 +291,7 @@ export default function LifecyclePage() {
         {/* Materials Section - Week specific */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>Course Materials</h2>
-          <p>The following materials are required for this course. Links to digital resources are provided where available.</p>
+          <p>You are required to read and review the following materials (readings, movies, songs) for this week. Links and PDFs to digital resources are provided where available.</p>
           
           <div style={{ marginTop: '30px' }}>
             <h3>Required Texts</h3>
@@ -317,13 +317,13 @@ export default function LifecyclePage() {
             {/* Assignment Section */}
             <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
               <h2>Assignment: Task</h2>
-              <p>Upload a picture from your childhood that represents a "no-place" - a space that exists between reality and imagination - that had significance to you growing up.</p>
+              <p>Upload a picture of you and your family which means something to you and which you’d be open to discussing with the class.</p>
               
               <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                 <h3>Task</h3>
-                <p>Upload Your Photo Here. Please note it will be shared with the class.</p>
-                <p><strong>Due:</strong> Upload before Next Tuesday's Class</p>
-                <p><strong>Submission Format:</strong> Image document uploaded to the course portal</p>
+                <p>Upload Your Photo Here. </p>
+                <p><strong>Due:</strong> Before Class on Tuesday (1:30 PM, April 8th)</p>
+                <p><strong>Submission Format:</strong> Image, with a short optional caption if you wish to provide some context.</p>
               </div>
             </div>
             
