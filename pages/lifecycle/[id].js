@@ -99,54 +99,85 @@ export default function LifecyclePage() {
     }
   };
 
-  // Function to delete a submission - FIXED
-  const handleDeleteSubmission = async (submissionId, filePath) => {
-    if (!window.confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
-      return;
-    }
+// Modified handleDeleteSubmission function with better debugging and error handling
+const handleDeleteSubmission = async (submissionId, filePath) => {
+  if (!window.confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
+    return;
+  }
 
-    try {
-      setIsDeleting(true);
-      setError(null);
-      
-      console.log('Starting deletion for ID:', submissionId, 'Path:', filePath);
-      
-      // Step 1: Delete the database record first
-      const { data: deleteData, error: deleteError } = await supabase
-        .from('student_contributions')
-        .delete()
-        .eq('id', submissionId);
-      
-      if (deleteError) {
-        console.error('Database deletion error:', deleteError);
-        throw deleteError;
-      }
-      
-      console.log('Database deletion successful');
-      
-      // Step 2: Delete the file from storage
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from('contributions')
-        .remove([filePath]);
-      
-      if (storageError) {
-        console.error('Storage deletion error:', storageError);
-        console.warn('File deletion failed but database record was removed');
-      } else {
-        console.log('Storage deletion successful');
-      }
-      
-      // Step 3: Update local state immediately
-      setSubmissions(prevSubmissions => 
-        prevSubmissions.filter(submission => submission.id !== submissionId)
-      );
-    } catch (error) {
-      console.error('Error in delete operation:', error);
-      setError('Error deleting submission: ' + (error.message || 'Unknown error'));
-    } finally {
-      setIsDeleting(false);
+  try {
+    setIsDeleting(true);
+    setError(null);
+    
+    console.log('Starting deletion process for ID:', submissionId);
+    
+    // Check if the submission exists in the database first
+    const { data: checkData, error: checkError } = await supabase
+      .from('student_contributions')
+      .select('id')
+      .eq('id', submissionId)
+      .single();
+    
+    if (checkError) {
+      console.error('Error checking submission existence:', checkError);
+    } else {
+      console.log('Found submission in database:', checkData);
     }
-  };
+    
+    // Step 1: Delete the database record first - MAKE SURE TO USE MATCH CONDITIONS
+    const { data: deleteData, error: deleteError } = await supabase
+      .from('student_contributions')
+      .delete()
+      .match({ id: submissionId }) // Using match instead of eq for more reliable deletion
+      .select(); // Get back the deleted record
+    
+    if (deleteError) {
+      console.error('Database deletion error:', deleteError);
+      throw deleteError;
+    }
+    
+    console.log('Database deletion result:', deleteData);
+    
+    // Step 2: Delete the file from storage
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from('contributions')
+      .remove([filePath]);
+    
+    if (storageError) {
+      console.error('Storage deletion error:', storageError);
+      console.warn('File deletion failed but database record was removed');
+    } else {
+      console.log('Storage deletion successful:', storageData);
+    }
+    
+    // Step 3: Update local state immediately
+    setSubmissions(prevSubmissions => 
+      prevSubmissions.filter(submission => submission.id !== submissionId)
+    );
+    
+    // Step 4: Verify deletion was successful by checking if the record still exists
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('student_contributions')
+      .select('id')
+      .eq('id', submissionId)
+      .single();
+    
+    if (verifyError && verifyError.code === 'PGRST116') {
+      // PGRST116 means "no rows returned" - this is good, the record is gone
+      console.log('Verified deletion was successful - record no longer exists');
+    } else if (verifyData) {
+      console.error('Deletion verification failed - record still exists:', verifyData);
+      throw new Error('Failed to delete - record still exists in database');
+    }
+    
+  } catch (error) {
+    console.error('Error in delete operation:', error);
+    setError('Error deleting submission: ' + (error.message || 'Unknown error'));
+    alert('Failed to delete submission. Please try again later.');
+  } finally {
+    setIsDeleting(false);
+  }
+};
 
   if (!id || !titles[id]) {
     return (
