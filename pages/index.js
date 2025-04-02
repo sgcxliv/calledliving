@@ -42,7 +42,7 @@ export default function Home() {
           <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
             <h4 style={{ marginTop: 0 }}>Field Trip Scheduled</h4>
             <p>Our first activity will be completed outside of class time at the Bing Nursery School, located at 850 Escondido Rd, Stanford, CA 94305</p>
-        <a href="https://forms.gle/4ApEAJ7dqhKjTPKN6.">Signup Link</a>
+        <a href="https://forms.gle/4ApEAJ7dqhKjTPKN6">Signup Link</a>
           </div>
         </div>
       </div>
