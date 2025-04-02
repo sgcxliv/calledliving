@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
@@ -6,6 +6,19 @@ import { supabase } from '../lib/supabaseClient';
 export default function Navbar({ user }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const router = useRouter();
+
+  // Add this useEffect to close dropdown on route change
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setActiveDropdown(null);
+    };
+    
+    router.events.on('routeChangeStart', handleRouteChange);
+    
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
+  }, [router]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
