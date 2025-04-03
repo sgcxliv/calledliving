@@ -32,6 +32,9 @@ export default function Home() {
     getUser();
   }, []);
 
+  // Determine if user can manage announcements (professors and CDAs)
+  const canManageAnnouncements = userRole === 'professor' || userRole === 'CDA';
+
   return (
     <Layout title="RELIGST18N: What is Called Living? Course Dashboard - Home">
       <div className="tab-content active">
@@ -43,19 +46,17 @@ export default function Home() {
         <div style={{ marginTop: '30px' }}>
           <h3>This Week: The Life of Students. </h3>
           <ul>
-            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464 (Homeroom) </li>
-            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464 (Homeroom) </li>
+            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
+            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
             <li>TO-DO for Next Week: Bing Nursery Signups, Family Photo Upload for Week 2</li>
           </ul>
         </div>
         
-        {/* Replace the static announcements with the dynamic component */}
-        {user && (
-          <AnnouncementsComponent 
-            user={user} 
-            canManageAnnouncements={userRole === 'professor' || userRole === 'CDA'}
-          />
-        )}
+        {/* Show announcements to everyone, logged in or not */}
+        <AnnouncementsComponent 
+          user={user} 
+          canManageAnnouncements={canManageAnnouncements} 
+        />
       </div>
     </Layout>
   );
