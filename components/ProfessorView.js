@@ -161,38 +161,6 @@ export default function ProfessorView({ user }) {
     );
   }
 
-  // Show announcements management tab
-  if (activeTab === 'announcements') {
-    return (
-      <div>
-        <div className="professor-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'students' ? 'active' : ''}`}
-            onClick={() => setActiveTab('students')}
-          >
-            Student Messages
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'announcements' ? 'active' : ''}`}
-            onClick={() => setActiveTab('announcements')}
-          >
-            Manage Announcements
-          </button>
-        </div>
-
-        <div className="announcements-management">
-          <h3>Manage Course Announcements</h3>
-          <p>Create and manage announcements for your course that will be displayed on the home page.</p>
-          
-          <AnnouncementsComponent 
-            user={user} 
-            canManageAnnouncements={true} 
-          />
-        </div>
-      </div>
-    );
-  }
-
   // Show student list (default view)
   return (
     <div>
