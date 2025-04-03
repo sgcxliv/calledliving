@@ -27,8 +27,8 @@ export default function Home() {
         <div style={{ marginTop: '30px' }}>
           <h3>This Week: The Life of Students. </h3>
           <ul>
-            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA WEST 464</li>
-            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, ENCINA WEST 464</li>
+            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
+            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
             <li>TO-DO for Next Week: Bing Nursery Signups, Family Photo Upload for Week 2</li>
           </ul>
         </div>
