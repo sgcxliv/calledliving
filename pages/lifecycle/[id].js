@@ -349,7 +349,7 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
           <p>{themeContent[id].description}</p>
           
           <div style={{ marginTop: '30px' }}>
-            <h3>Questions to think about</h3>
+            <h3>Things to think about as you read...</h3>
             <ul>
               {themeContent[id].questions.map((question, index) => (
                 <li key={index}>{question}</li>
