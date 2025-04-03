@@ -100,7 +100,7 @@ export default function Navbar({ user }) {
         onClick={() => navigateTo(user ? "/dashboard" : "/login")}
       >
         <span className="w-full h-full block">
-          {user ? 'Dashboard' : 'Login'}
+          {user ? 'Reflection Portal' : 'Login'}
         </span>
       </div>
     </nav>
