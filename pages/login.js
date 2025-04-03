@@ -35,8 +35,8 @@ export default function Login() {
           <p>Checking authentication status...</p>
         ) : (
           <>
-            <h2>Student Login</h2>
-            <p>Please log in to access your audio messaging portal. All other parts of the site are freely accessible without login.</p>
+            <h2>Login Portal</h2>
+            <p>Please log in to access your audio messaging portal. Professors must be logged in to post announcements. All other parts of the site are freely accessible without login.</p>
             
             <LoginForm onSuccessfulLogin={() => router.push('/dashboard')} />
             
