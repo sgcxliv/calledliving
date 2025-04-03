@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <Layout title="RELIGST18N: What is Called Living? Course Dashboard - Home">
       <div className="tab-content active">
-        <h2>Welcome to RELIGST18N: What is Called Living?</h2>
+        <h2>Welcome to "What is Called Living?"</h2>
         <p>Here you will find everything you need for the class. 
     The site will continue to update as we progress, so please keep an eye out for changes. 
     The nature of this class is spontaneous, so we count on you to stay informed. Weekly pages with required readings, reflection prompts, and instructions for assignments will be published one week in advance under the "Life Cycle" Tab. </p>
