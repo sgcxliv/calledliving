@@ -329,6 +329,7 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
         {/* Reflection Prompt Section */}
         <div style={{ 
           marginTop: '30px', 
+          marginBottom: '30px', 
           padding: '20px', 
           backgroundColor: '#f0f7ff', 
           borderRadius: '6px',
