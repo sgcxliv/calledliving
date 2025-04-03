@@ -43,9 +43,12 @@ export default function LifecyclePage() {
       title: 'Childhood as a No-place',
       description: 'Childhood exists as both a historical phase and a mythical construct, a space where imagination and reality blur. We examine how childhood functions as both memory and possibility.',
       questions: [
-        'How is childhood constructed as both a physical and metaphysical space?',
+        'How is childhood constructed as both a physical, mental, and metaphysical space?',
         'What is the relationship between childhood memory and adult identity?',
-        'How do social and cultural forces shape our understanding of childhood?'
+        'How do social and cultural forces shape our understanding of childhood as a stage of life?'
+        'What is Play? What function does it have in life?'
+        'Do Adults Play? Why is there an emphasis on Play for Children, but not for Adults?'
+
       ]
     }
   };
