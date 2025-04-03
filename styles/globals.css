@@ -300,3 +300,125 @@ button {
 .logout-button:hover {
   background-color: #d32f2f;
 }
+/* File upload styling */
+.file-upload-container {
+  padding: 15px;
+  border: 2px dashed #ced4da;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  transition: all 0.2s;
+}
+
+.file-upload-container:hover {
+  border-color: #0066cc;
+  background-color: #f0f7ff;
+}
+
+.file-upload-container input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  background-color: #f0f7ff;
+  border-radius: 4px;
+  border: 1px solid #cfe2ff;
+}
+
+.file-preview .file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-preview .file-size {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.file-preview .file-remove {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.file-preview .file-remove:hover {
+  background-color: #ffebee;
+}
+
+.file-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #f0f7ff;
+  border-radius: 4px;
+  border: 1px solid #cfe2ff;
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+  margin-top: 10px;
+  transition: all 0.2s;
+}
+
+.file-attachment:hover {
+  background-color: #e6f0ff;
+  text-decoration: none;
+}
+
+.file-attachment .file-icon {
+  font-size: 1.2rem;
+}
+
+/* Improving button styles for file upload operations */
+.upload-action-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 0;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.upload-action-button:hover {
+  background-color: #218838;
+}
+
+.upload-action-button:disabled {
+  background-color: #8cbf9a;
+  cursor: not-allowed;
+}
+
+/* Loading spinner for file upload */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
