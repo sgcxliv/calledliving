@@ -53,8 +53,8 @@ export default function LifecyclePage() {
   };
 
   const reflectionPrompts = {
-  '1': 'No reflections for this week!',
-  '2': 'To be released',
+  '1': 'No prompt this week. Reflections Start Week 2!',
+  '2': 'What is called "Childhood"?',
 };
 
 
