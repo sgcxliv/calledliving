@@ -62,7 +62,7 @@ export default function Layout({ children, title = 'REGLIST18N: What is Called L
       <div id="main-content">
         <header>
           <div className="header-container">
-            <h1>Course Dashboard</h1>
+            <h1>RELIGST18N: What is Called Living, Spring 2025</h1>
             {user && (
               <button 
                 onClick={handleLogout}
