@@ -222,6 +222,3 @@ const AnnouncementsComponent = ({ user, isProfessor }) => {
 };
 
 export default AnnouncementsComponent;
-};
-
-export default AnnouncementsComponent;
