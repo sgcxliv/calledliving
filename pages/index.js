@@ -2,15 +2,31 @@ import Layout from '../components/Layout';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import AnnouncementsComponent from '../components/AnnouncementsComponent';
 
 export default function Home() {
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   
   useEffect(() => {
     // Safely get current user
     const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user || null);
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (userData?.user) {
+        setUser(userData.user);
+        
+        // Get user role from profiles table
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userData.user.id)
+          .single();
+          
+        if (!error && profileData) {
+          setUserRole(profileData.role);
+        }
+      }
     };
     
     getUser();
@@ -27,25 +43,21 @@ export default function Home() {
         <div style={{ marginTop: '30px' }}>
           <h3>This Week: The Life of Students. </h3>
           <ul>
-            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
-            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
+            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464 (Homeroom) </li>
+            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464 (Homeroom) </li>
             <li>TO-DO for Next Week: Bing Nursery Signups, Family Photo Upload for Week 2</li>
           </ul>
         </div>
         
-        <div style={{ marginTop: '30px' }}>
-          <h3>Announcements</h3>
-          <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '15px' }}>
-            <h4 style={{ marginTop: 0 }}>Field Trip Scheduled</h4>
-            <p>Our first activity will be completed outside of class time at the Bing Nursery School, located at 850 Escondido Rd, Stanford, CA 94305</p>
-        <a href="https://forms.gle/4ApEAJ7dqhKjTPKN6">Signup Link</a>
-          <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-              <h4 style={{ marginTop: 0 }}>Welcome to the Course!</h4>
-            <p>Please review the syllabus and complete the assigned readings and tasks for this week.</p>
-          </div>
-          </div>
-        </div>
+        {/* Replace the static announcements with the dynamic component */}
+        {user && (
+          <AnnouncementsComponent 
+            user={user} 
+            isProfessor={userRole === 'professor'} 
+          />
+        )}
       </div>
     </Layout>
   );
+}
 }
