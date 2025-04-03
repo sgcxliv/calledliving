@@ -352,7 +352,7 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
         }}>
           <h3 style={{ marginTop: 0, color: '#0066cc' }}>Reflection Prompt</h3>
           <p style={{ marginBottom: '10px' }}>
-            <em>Take some time to reflect on the following prompt before our next class discussion:</em>
+            <em>This is your reflection prompt for the week. Record your 3-6 minute response to this question in your Reflection Portal. As a Reminder, prompts are released after class on Thursday and due by Saturday 9:00AM.</em>
           </p>
           <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
             {reflectionPrompts[id] || 'Reflection prompt will be provided soon.'}
