@@ -34,7 +34,7 @@ export default function Signup() {
           <p>Checking authentication status...</p>
         ) : (
           <>
-            <h2>Student Registration</h2>
+            <h2>Account Registration</h2>
             <p>Create an account to access the audio messaging portal.</p>
             
             <SignupForm onSuccessfulSignup={() => router.push('/dashboard')} />
