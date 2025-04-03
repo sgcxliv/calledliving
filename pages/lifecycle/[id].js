@@ -1,4 +1,4 @@
-// pages/lifecycle/[id].js
+  // pages/lifecycle/[id].js
 import Layout from '../../components/Layout';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
@@ -52,6 +52,12 @@ export default function LifecyclePage() {
       ]
     }
   };
+
+  const reflectionPrompts = {
+  '1': 'No reflections for this week!',
+  '2': 'To be released',
+};
+
 
   const requiredReadings = {
     '1': [
@@ -320,7 +326,7 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
         }}>
           <h1>Week {id}: {titles[id]}</h1>
         </header>
-        
+
         {/* Theme Section - Week specific */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
           <h2>{themeContent[id].title}</h2>
@@ -335,6 +341,24 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
             </ul>
           </div>
         </div>
+
+        {/* Reflection Prompt Section */}
+        <div style={{ 
+          marginTop: '30px', 
+          padding: '20px', 
+          backgroundColor: '#f0f7ff', 
+          borderRadius: '6px',
+          borderLeft: '4px solid #0066cc'
+        }}>
+          <h3 style={{ marginTop: 0, color: '#0066cc' }}>Reflection Prompt</h3>
+          <p style={{ marginBottom: '10px' }}>
+            <em>Take some time to reflect on the following prompt before our next class discussion:</em>
+          </p>
+          <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
+            {reflectionPrompts[id] || 'Reflection prompt will be provided soon.'}
+          </p>
+        </div>
+      </div>
         
         {/* Materials Section - Week specific */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
