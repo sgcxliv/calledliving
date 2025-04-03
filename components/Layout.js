@@ -3,7 +3,7 @@ import Navbar from './Navbar';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-export default function Layout({ children, title = 'Course Dashboard' }) {
+export default function Layout({ children, title = 'REGLIST18N: What is Called Living?' }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
