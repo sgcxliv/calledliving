@@ -14,6 +14,15 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     linkText: ''
   });
 
+  // State for editing an existing announcement
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    content: '',
+    link: '',
+    linkText: ''
+  });
+
   // State to control form visibility
   const [showForm, setShowForm] = useState(false);
 
@@ -39,7 +48,7 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     }
   };
 
-  // Handle form input changes
+  // Handle form input changes for new announcements
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAnnouncement(prev => ({
@@ -48,7 +57,77 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     }));
   };
 
-  // Handle form submission
+  // Handle form input changes for editing announcements
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Start editing an announcement
+  const handleStartEdit = (announcement) => {
+    setEditingAnnouncement(announcement.id);
+    setEditFormData({
+      title: announcement.title,
+      content: announcement.content,
+      link: announcement.link || '',
+      linkText: announcement.link_text || ''
+    });
+    setShowForm(false); // Close the new announcement form if it's open
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingAnnouncement(null);
+    setEditFormData({
+      title: '',
+      content: '',
+      link: '',
+      linkText: ''
+    });
+  };
+
+  // Save edited announcement
+  const handleSaveEdit = async (id) => {
+    try {
+      const updatedItem = {
+        title: editFormData.title,
+        content: editFormData.content,
+        link: editFormData.link || null,
+        link_text: editFormData.linkText || null,
+        // Don't update created_at or professor_id
+      };
+      
+      const { data, error } = await supabase
+        .from('announcements')
+        .update(updatedItem)
+        .eq('id', id)
+        .select();
+      
+      if (error) throw error;
+      
+      // Update the announcement in the local state
+      setAnnouncements(announcements.map(announcement => 
+        announcement.id === id ? data[0] : announcement
+      ));
+      
+      // Reset editing state
+      setEditingAnnouncement(null);
+      setEditFormData({
+        title: '',
+        content: '',
+        link: '',
+        linkText: ''
+      });
+    } catch (error) {
+      console.error('Error updating announcement:', error);
+      alert('Error updating announcement. Please try again.');
+    }
+  };
+
+  // Handle new announcement form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -136,7 +215,7 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
           color: '#333'
         }}>Announcements</h3>
         
-        {canManageAnnouncements && (
+        {canManageAnnouncements && !editingAnnouncement && (
           <button 
             onClick={() => setShowForm(!showForm)} 
             style={{
@@ -155,8 +234,8 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
         )}
       </div>
       
-      {/* Add Announcement Form - Only visible to professors/CDAs */}
-      {canManageAnnouncements && showForm && (
+      {/* Add Announcement Form - Only visible when adding new announcements */}
+      {canManageAnnouncements && showForm && !editingAnnouncement && (
         <div style={{
           backgroundColor: 'white',
           padding: '20px',
@@ -336,83 +415,249 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
                 border: '1px solid #eee'
               }}
             >
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'flex-start',
-                marginBottom: '10px',
-                borderBottom: '1px solid #f0f0f0',
-                paddingBottom: '10px'
-              }}>
-                <h4 style={{ 
-                  margin: '0',
-                  fontSize: '1.2rem',
-                  fontWeight: '600',
-                  color: '#333'
-                }}>
-                  {announcement.title}
-                </h4>
-                <span style={{ 
-                  fontSize: '0.9rem',
-                  color: '#888',
-                  marginLeft: '10px'
-                }}>
-                  {formatDate(announcement.created_at)}
-                </span>
-              </div>
-              
-              <div style={{
-                marginBottom: '15px',
-                fontSize: '1rem',
-                lineHeight: '1.5',
-                color: '#444',
-                whiteSpace: 'pre-line'
-              }}>
-                {announcement.content}
-              </div>
-              
-              {announcement.link && (
-                <div style={{ marginBottom: '10px' }}>
-                  <a 
-                    href={announcement.link} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: '#0066cc',
-                      textDecoration: 'none',
+              {/* Edit Form - Shown when editing this announcement */}
+              {canManageAnnouncements && editingAnnouncement === announcement.id ? (
+                <div style={{ marginBottom: '15px' }}>
+                  <h4 style={{ 
+                    marginTop: '0', 
+                    marginBottom: '15px',
+                    fontSize: '1.2rem',
+                    color: '#444' 
+                  }}>Edit Announcement</h4>
+                  
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '6px',
                       fontWeight: '500',
-                      display: 'inline-block',
-                      padding: '5px 10px',
-                      backgroundColor: '#f0f7ff',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    {announcement.link_text || 'View Link'}
-                  </a>
+                      color: '#555'
+                    }}>
+                      Title
+                    </label>
+                    <input 
+                      type="text" 
+                      name="title"
+                      value={editFormData.title}
+                      onChange={handleEditInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #ced4da',
+                        borderRadius: '4px',
+                        fontSize: '1rem'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '6px',
+                      fontWeight: '500',
+                      color: '#555'
+                    }}>
+                      Content
+                    </label>
+                    <textarea 
+                      name="content"
+                      value={editFormData.content}
+                      onChange={handleEditInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #ced4da',
+                        borderRadius: '4px',
+                        fontSize: '1rem',
+                        minHeight: '100px',
+                        resize: 'vertical'
+                      }}
+                      rows="4"
+                      required
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '6px',
+                      fontWeight: '500',
+                      color: '#555'
+                    }}>
+                      Link (optional)
+                    </label>
+                    <input 
+                      type="url" 
+                      name="link"
+                      value={editFormData.link}
+                      onChange={handleEditInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #ced4da',
+                        borderRadius: '4px',
+                        fontSize: '1rem'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '6px',
+                      fontWeight: '500',
+                      color: '#555'
+                    }}>
+                      Link Text (optional)
+                    </label>
+                    <input 
+                      type="text" 
+                      name="linkText"
+                      value={editFormData.linkText}
+                      onChange={handleEditInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #ced4da',
+                        borderRadius: '4px',
+                        fontSize: '1rem'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{ 
+                    display: 'flex',
+                    gap: '10px'
+                  }}>
+                    <button 
+                      onClick={() => handleSaveEdit(announcement.id)}
+                      style={{
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        flex: '1'
+                      }}
+                    >
+                      Save Changes
+                    </button>
+                    <button 
+                      onClick={handleCancelEdit}
+                      style={{
+                        backgroundColor: '#6c757d',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              )}
-              
-              {canManageAnnouncements && (
-                <div style={{ 
-                  marginTop: '10px',
-                  textAlign: 'right',
-                  borderTop: '1px solid #f0f0f0',
-                  paddingTop: '10px'
-                }}>
-                  <button
-                    onClick={() => handleDeleteAnnouncement(announcement.id)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#dc3545',
-                      cursor: 'pointer',
+              ) : (
+                // Regular announcement view (not editing)
+                <>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'flex-start',
+                    marginBottom: '10px',
+                    borderBottom: '1px solid #f0f0f0',
+                    paddingBottom: '10px'
+                  }}>
+                    <h4 style={{ 
+                      margin: '0',
+                      fontSize: '1.2rem',
+                      fontWeight: '600',
+                      color: '#333'
+                    }}>
+                      {announcement.title}
+                    </h4>
+                    <span style={{ 
                       fontSize: '0.9rem',
-                      padding: '5px 10px'
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
+                      color: '#888',
+                      marginLeft: '10px'
+                    }}>
+                      {formatDate(announcement.created_at)}
+                    </span>
+                  </div>
+                  
+                  <div style={{
+                    marginBottom: '15px',
+                    fontSize: '1rem',
+                    lineHeight: '1.5',
+                    color: '#444',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {announcement.content}
+                  </div>
+                  
+                  {announcement.link && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <a 
+                        href={announcement.link} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#0066cc',
+                          textDecoration: 'none',
+                          fontWeight: '500',
+                          display: 'inline-block',
+                          padding: '5px 10px',
+                          backgroundColor: '#f0f7ff',
+                          borderRadius: '4px'
+                        }}
+                      >
+                        {announcement.link_text || 'View Link'}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {canManageAnnouncements && (
+                    <div style={{ 
+                      marginTop: '10px',
+                      textAlign: 'right',
+                      borderTop: '1px solid #f0f0f0',
+                      paddingTop: '10px',
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      gap: '10px'
+                    }}>
+                      <button
+                        onClick={() => handleStartEdit(announcement)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#0066cc',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem',
+                          padding: '5px 10px'
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAnnouncement(announcement.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#dc3545',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem',
+                          padding: '5px 10px'
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))}
