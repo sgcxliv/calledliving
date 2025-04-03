@@ -53,7 +53,7 @@ export default function Home() {
         {user && (
           <AnnouncementsComponent 
             user={user} 
-            isProfessor={userRole === 'professor'} 
+            canManageAnnouncements={userRole === 'professor' || userRole === 'CDA'}
           />
         )}
       </div>
