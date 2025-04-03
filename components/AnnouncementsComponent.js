@@ -404,6 +404,157 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     return '📄';
   };
 
+  const renderFileAttachment = (announcement) => {
+  if (!announcement.file_path) return null;
+
+  const fileUrl = getFileURL(announcement.file_path);
+  const fileType = announcement.file_type || '';
+
+  // Image handling
+  if (fileType.startsWith('image/')) {
+    return (
+      <div style={{ 
+        maxWidth: '100%', 
+        marginBottom: '15px',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+      }}>
+        <img 
+          src={fileUrl} 
+          alt={announcement.file_name}
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+            objectFit: 'contain'
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Video handling
+  if (fileType.startsWith('video/')) {
+    return (
+      <div style={{ 
+        maxWidth: '100%', 
+        marginBottom: '15px',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+      }}>
+        <video 
+          controls 
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block'
+          }}
+        >
+          <source src={fileUrl} type={fileType} />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    );
+  }
+
+  // Audio handling
+  if (fileType.startsWith('audio/')) {
+    return (
+      <div style={{ 
+        maxWidth: '100%', 
+        marginBottom: '15px',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+      }}>
+        <audio 
+          controls 
+          style={{
+            width: '100%',
+            display: 'block'
+          }}
+        >
+          <source src={fileUrl} type={fileType} />
+          Your browser does not support the audio tag.
+        </audio>
+      </div>
+    );
+  }
+
+  // PDF handling (inline preview if possible)
+  if (fileType === 'application/pdf') {
+    return (
+      <div style={{ 
+        maxWidth: '100%', 
+        marginBottom: '15px',
+        height: '500px',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+      }}>
+        <object 
+          data={fileUrl} 
+          type="application/pdf" 
+          width="100%" 
+          height="100%"
+        >
+          <a 
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: '#0066cc',
+              textDecoration: 'none',
+              fontWeight: '500',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '8px 12px',
+              backgroundColor: '#f0f7ff',
+              borderRadius: '4px',
+              fontSize: '0.9rem'
+            }}
+            download={announcement.file_name}
+          >
+            <span>{getFileIcon(fileType)}</span>
+            <span>Download PDF: {announcement.file_name}</span>
+          </a>
+        </object>
+      </div>
+    );
+  }
+
+  // Fallback for other file types - download link
+  return (
+    <div style={{ marginBottom: '10px' }}>
+      <a 
+        href={fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          color: '#0066cc',
+          textDecoration: 'none',
+          fontWeight: '500',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '5px',
+          padding: '8px 12px',
+          backgroundColor: '#f0f7ff',
+          borderRadius: '4px',
+          fontSize: '0.9rem'
+        }}
+        download={announcement.file_name}
+      >
+        <span>{getFileIcon(fileType)}</span>
+        <span>Download: {announcement.file_name}</span>
+      </a>
+    </div>
+  );
+};
+
+
   return (
     <div className="announcements-container" style={{ 
       padding: '25px 30px 30px',
@@ -973,32 +1124,7 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
                   </div>
                   
                   {/* Display file attachment if it exists */}
-                  {announcement.file_path && (
-                    <div style={{ marginBottom: '10px' }}>
-                      <a 
-                        href={getFileURL(announcement.file_path)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: '#0066cc',
-                          textDecoration: 'none',
-                          fontWeight: '500',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          padding: '8px 12px',
-                          backgroundColor: '#f0f7ff',
-                          borderRadius: '4px',
-                          fontSize: '0.9rem'
-                        }}
-                        download={announcement.file_name}
-                      >
-                        <span>{getFileIcon(announcement.file_type)}</span>
-                        <span>Download: {announcement.file_name}</span>
-                      </a>
-                    </div>
-                  )}
-                  
+                  {announcement.file_path && renderFileAttachment(announcement)}
                   {/* Display link if it exists */}
                   {announcement.link && (
                     <div style={{ marginBottom: '10px' }}>
