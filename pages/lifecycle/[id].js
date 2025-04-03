@@ -45,10 +45,9 @@ export default function LifecyclePage() {
       questions: [
         'How is childhood constructed as both a physical, mental, and metaphysical space?',
         'What is the relationship between childhood memory and adult identity?',
-        'How do social and cultural forces shape our understanding of childhood as a stage of life?'
-        'What is Play? What function does it have in life?'
-        'Do Adults Play? Why is there an emphasis on Play for Children, but not for Adults?'
-
+        'How do social and cultural forces shape our understanding of childhood as a stage of life?',
+        'What is Play? What function does it have in life?',
+        'Do Adults Play? Why is there an emphasis on Play for Children, but not for Adults?',
       ]
     }
   };
