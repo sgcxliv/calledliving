@@ -326,21 +326,6 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
           <h1>Week {id}: {titles[id]}</h1>
         </header>
 
-        {/* Theme Section - Week specific */}
-        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-          <h2>{themeContent[id].title}</h2>
-          <p>{themeContent[id].description}</p>
-          
-          <div style={{ marginTop: '30px' }}>
-            <h3>Questions to think about</h3>
-            <ul>
-              {themeContent[id].questions.map((question, index) => (
-                <li key={index}>{question}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
         {/* Reflection Prompt Section */}
         <div style={{ 
           marginTop: '30px', 
@@ -356,6 +341,21 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
           <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
             {reflectionPrompts[id] || 'Reflection prompt will be provided soon.'}
           </p>
+        </div>
+
+        {/* Theme Section - Week specific */}
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+          <h2>{themeContent[id].title}</h2>
+          <p>{themeContent[id].description}</p>
+          
+          <div style={{ marginTop: '30px' }}>
+            <h3>Questions to think about</h3>
+            <ul>
+              {themeContent[id].questions.map((question, index) => (
+                <li key={index}>{question}</li>
+              ))}
+            </ul>
+          </div>
         </div>
         
         {/* Materials Section - Week specific */}
