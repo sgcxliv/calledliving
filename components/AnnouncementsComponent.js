@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-const AnnouncementsComponent = ({ user, isProfessor }) => {
+const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
   // State to store all announcements
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +113,7 @@ const AnnouncementsComponent = ({ user, isProfessor }) => {
     <div className="mt-8">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-bold">Announcements</h3>
-        {isProfessor && (
+        {canManageAnnouncements && (
           <button 
             onClick={() => setShowForm(!showForm)} 
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -124,7 +124,7 @@ const AnnouncementsComponent = ({ user, isProfessor }) => {
       </div>
       
       {/* Add Announcement Form - Only visible to professors */}
-      {isProfessor && showForm && (
+      {canManageAnnouncements && showForm && (
         <div className="bg-gray-100 p-4 mb-6 rounded shadow">
           <h4 className="text-lg font-semibold mb-3">New Announcement</h4>
           <form onSubmit={handleSubmit}>
@@ -204,7 +204,7 @@ const AnnouncementsComponent = ({ user, isProfessor }) => {
                 {announcement.link_text || announcement.link}
               </a>
             )}
-            {isProfessor && (
+            {canManageAnnouncements && (
               <div className="mt-2 text-right">
                 <button
                   onClick={() => handleDeleteAnnouncement(announcement.id)}
