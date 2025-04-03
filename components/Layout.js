@@ -2,10 +2,12 @@ import Head from 'next/head';
 import Navbar from './Navbar';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useRouter } from 'next/router';
 
 export default function Layout({ children, title = 'REGLIST18N: What is Called Living?' }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     // Get current user in a safe way
@@ -38,6 +40,18 @@ export default function Layout({ children, title = 'REGLIST18N: What is Called L
     };
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Redirect to home page after logout
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error.message);
+    }
+  };
+
   return (
     <>
       <Head>
@@ -47,7 +61,17 @@ export default function Layout({ children, title = 'REGLIST18N: What is Called L
       </Head>
       <div id="main-content">
         <header>
-          <h1>Course Dashboard</h1>
+          <div className="header-container">
+            <h1>Course Dashboard</h1>
+            {user && (
+              <button 
+                onClick={handleLogout}
+                className="logout-button"
+              >
+                Logout
+              </button>
+            )}
+          </div>
         </header>
         
         <Navbar user={user} />
