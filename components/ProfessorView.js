@@ -186,7 +186,7 @@ export default function ProfessorView({ user }) {
           
           <AnnouncementsComponent 
             user={user} 
-            isProfessor={true} 
+            canManageAnnouncements={true} 
           />
         </div>
       </div>
