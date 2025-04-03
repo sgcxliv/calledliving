@@ -37,13 +37,13 @@ export default function Calendar() {
               <td style={{ border: '1px solid #999', padding: '8px' }}>April 8th</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Family Matters</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Upload a Family Photo</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, TBD </td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, Encina Center 464 </td>
             </tr>
             <tr>
               <td style={{ border: '1px solid #999', padding: '8px' }}>2 (Th)</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>April 10th</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Recess</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>Play!</td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>Play! (Bring Sunglasses/Hat) </td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, Meyer Green Field </td>
             </tr>
             <tr>
