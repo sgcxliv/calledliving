@@ -59,7 +59,7 @@ export default function Syllabus() {
                  <h3>Weekly Reflections</h3>
         <ul>
           <li>These weekly voice notes (3-6 minutes) will answer the question: “What is Called ______? (e.g., Childhood, The Real World) based on some prepared reflections on the week’s experiences, discussions, and readings. 
-            I will respond, in turn, which will thus facilitate our intellectual exchange (outside of the collective endeavor). Prompts will be released on Thursday after class on the website every week, and recordings will be due Saturday mornings at 9:00am. 
+            I will respond, in turn, which will thus facilitate our intellectual exchange (outside of the collective endeavor). Starting Week 2, Prompts will be released on Thursday after class on the website every week, and recordings will be due Saturday mornings at 9:00am. 
 </li>
         </ul>
                      <h3>Exams (Final + Miderm)</h3>
