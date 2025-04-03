@@ -129,9 +129,6 @@ export default function SignupForm() {
             required
           />
         </div>
-        <p style={{ fontSize: '0.9em', marginTop: '5px', color: '#666' }}>
-          Note: Each student may send up to 10 audio messages (max 8 minutes each).
-        </p>
         <button
           type="submit"
           className="login-btn"
