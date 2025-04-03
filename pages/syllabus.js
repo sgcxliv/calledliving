@@ -5,7 +5,7 @@ export default function Syllabus() {
     <Layout title="Course Dashboard - Syllabus">
       <div className="tab-content active">
         <h2>RELIGST18N: What is Called Living?</h2>
-        <p>TTh 1:30 - 2:50, Location Always Changing</p>
+        <p>TTh 1:30 - 2:50, Location Always Changing. Homeroom @Encina West 464</p>
         
         <h3>People</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '20px' }}>
