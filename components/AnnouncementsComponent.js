@@ -109,70 +109,183 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     }
   };
 
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
   return (
-    <div className="mt-8">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold">Announcements</h3>
+    <div className="announcements-container" style={{ 
+      padding: '25px 30px 30px',
+      marginTop: '30px',
+      backgroundColor: '#f8f9fa',
+      borderRadius: '8px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '20px'
+      }}>
+        <h3 style={{ 
+          fontSize: '1.5rem', 
+          fontWeight: 'bold',
+          margin: '0',
+          color: '#333'
+        }}>Announcements</h3>
+        
         {canManageAnnouncements && (
           <button 
             onClick={() => setShowForm(!showForm)} 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            style={{
+              backgroundColor: showForm ? '#6c757d' : '#444',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              transition: 'background-color 0.2s'
+            }}
           >
             {showForm ? 'Cancel' : 'Add Announcement'}
           </button>
         )}
       </div>
       
-      {/* Add Announcement Form - Only visible to professors */}
+      {/* Add Announcement Form - Only visible to professors/CDAs */}
       {canManageAnnouncements && showForm && (
-        <div className="bg-gray-100 p-4 mb-6 rounded shadow">
-          <h4 className="text-lg font-semibold mb-3">New Announcement</h4>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '20px',
+          marginBottom: '25px',
+          borderRadius: '6px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h4 style={{ 
+            marginTop: '0', 
+            marginBottom: '15px',
+            fontSize: '1.2rem',
+            color: '#444' 
+          }}>New Announcement</h4>
+          
           <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label className="block mb-1">Title</label>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '6px',
+                fontWeight: '500',
+                color: '#555'
+              }}>
+                Title
+              </label>
               <input 
                 type="text" 
                 name="title"
                 value={newAnnouncement.title}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ced4da',
+                  borderRadius: '4px',
+                  fontSize: '1rem'
+                }}
                 required
               />
             </div>
-            <div className="mb-3">
-              <label className="block mb-1">Content</label>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '6px',
+                fontWeight: '500',
+                color: '#555'
+              }}>
+                Content
+              </label>
               <textarea 
                 name="content"
                 value={newAnnouncement.content}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                rows="3"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ced4da',
+                  borderRadius: '4px',
+                  fontSize: '1rem',
+                  minHeight: '100px',
+                  resize: 'vertical'
+                }}
+                rows="4"
                 required
               />
             </div>
-            <div className="mb-3">
-              <label className="block mb-1">Link (optional)</label>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '6px',
+                fontWeight: '500',
+                color: '#555'
+              }}>
+                Link (optional)
+              </label>
               <input 
                 type="url" 
                 name="link"
                 value={newAnnouncement.link}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ced4da',
+                  borderRadius: '4px',
+                  fontSize: '1rem'
+                }}
               />
             </div>
-            <div className="mb-3">
-              <label className="block mb-1">Link Text (optional)</label>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '6px',
+                fontWeight: '500',
+                color: '#555'
+              }}>
+                Link Text (optional)
+              </label>
               <input 
                 type="text" 
                 name="linkText"
                 value={newAnnouncement.linkText}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ced4da',
+                  borderRadius: '4px',
+                  fontSize: '1rem'
+                }}
               />
             </div>
+            
             <button 
               type="submit" 
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              style={{
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                width: '100%',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
             >
               Post Announcement
             </button>
@@ -180,42 +293,130 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
         </div>
       )}
       
+      {/* Loading indicator */}
+      {loading && (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '30px',
+          color: '#666'
+        }}>
+          Loading announcements...
+        </div>
+      )}
+      
+      {/* No announcements message */}
+      {!loading && announcements.length === 0 && (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '30px',
+          backgroundColor: 'white',
+          borderRadius: '6px',
+          color: '#666',
+          border: '1px dashed #ddd'
+        }}>
+          No announcements yet.
+        </div>
+      )}
+      
       {/* Announcements List - Newest First */}
-      {!loading && announcements.length === 0 ? (
-        <p className="text-center py-4 text-gray-500">No announcements yet.</p>
-      ) : (
-        announcements.map(announcement => (
-          <div 
-            key={announcement.id} 
-            className="bg-white p-4 rounded shadow mb-4"
-          >
-            <div className="flex justify-between items-start">
-              <h4 className="text-lg font-semibold mt-0">{announcement.title}</h4>
-              <span className="text-sm text-gray-500">
-                {new Date(announcement.created_at).toLocaleDateString()}
-              </span>
-            </div>
-            <p className="my-2">{announcement.content}</p>
-            {announcement.link && (
-              <a 
-                href={announcement.link} 
-                className="text-blue-600 hover:underline"
-              >
-                {announcement.link_text || announcement.link}
-              </a>
-            )}
-            {canManageAnnouncements && (
-              <div className="mt-2 text-right">
-                <button
-                  onClick={() => handleDeleteAnnouncement(announcement.id)}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                >
-                  Delete
-                </button>
+      {!loading && announcements.length > 0 && (
+        <div style={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '15px'
+        }}>
+          {announcements.map(announcement => (
+            <div 
+              key={announcement.id} 
+              style={{
+                backgroundColor: 'white',
+                padding: '20px',
+                borderRadius: '6px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                border: '1px solid #eee'
+              }}
+            >
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'flex-start',
+                marginBottom: '10px',
+                borderBottom: '1px solid #f0f0f0',
+                paddingBottom: '10px'
+              }}>
+                <h4 style={{ 
+                  margin: '0',
+                  fontSize: '1.2rem',
+                  fontWeight: '600',
+                  color: '#333'
+                }}>
+                  {announcement.title}
+                </h4>
+                <span style={{ 
+                  fontSize: '0.9rem',
+                  color: '#888',
+                  marginLeft: '10px'
+                }}>
+                  {formatDate(announcement.created_at)}
+                </span>
               </div>
-            )}
-          </div>
-        ))
+              
+              <div style={{
+                marginBottom: '15px',
+                fontSize: '1rem',
+                lineHeight: '1.5',
+                color: '#444',
+                whiteSpace: 'pre-line'
+              }}>
+                {announcement.content}
+              </div>
+              
+              {announcement.link && (
+                <div style={{ marginBottom: '10px' }}>
+                  <a 
+                    href={announcement.link} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#0066cc',
+                      textDecoration: 'none',
+                      fontWeight: '500',
+                      display: 'inline-block',
+                      padding: '5px 10px',
+                      backgroundColor: '#f0f7ff',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    {announcement.link_text || 'View Link'}
+                  </a>
+                </div>
+              )}
+              
+              {canManageAnnouncements && (
+                <div style={{ 
+                  marginTop: '10px',
+                  textAlign: 'right',
+                  borderTop: '1px solid #f0f0f0',
+                  paddingTop: '10px'
+                }}>
+                  <button
+                    onClick={() => handleDeleteAnnouncement(announcement.id)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#dc3545',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      padding: '5px 10px'
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
