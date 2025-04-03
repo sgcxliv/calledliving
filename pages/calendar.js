@@ -30,7 +30,7 @@ export default function Calendar() {
               <td style={{ border: '1px solid #999', padding: '8px' }}>April 3rd</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Student Life</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Bing Nursery Sign-Ups</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, Green Library Stacks </td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, Encina Center 464  </td>
             </tr>
             <tr>
               <td style={{ border: '1px solid #999', padding: '8px' }}>2 (T)</td>
