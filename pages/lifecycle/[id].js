@@ -357,7 +357,6 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
             {reflectionPrompts[id] || 'Reflection prompt will be provided soon.'}
           </p>
         </div>
-      </div>
         
         {/* Materials Section - Week specific */}
         <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
