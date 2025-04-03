@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
@@ -14,13 +14,23 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     linkText: ''
   });
 
+  // File upload state
+  const [file, setFile] = useState(null);
+  const [fileUploading, setFileUploading] = useState(false);
+  const [editFile, setEditFile] = useState(null);
+  const fileInputRef = useRef(null);
+  const editFileInputRef = useRef(null);
+
   // State for editing an existing announcement
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [editFormData, setEditFormData] = useState({
     title: '',
     content: '',
     link: '',
-    linkText: ''
+    linkText: '',
+    fileName: '',
+    filePath: '',
+    fileType: ''
   });
 
   // State to control form visibility
@@ -66,6 +76,85 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     }));
   };
 
+  // Handle file selection for new announcements
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFile = e.target.files[0];
+      
+      // Check file size (limit to 10MB)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        alert('File is too large. Maximum file size is 10MB.');
+        return;
+      }
+      
+      setFile(selectedFile);
+    }
+  };
+  
+  // Handle file selection for editing announcements
+  const handleEditFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFile = e.target.files[0];
+      
+      // Check file size (limit to 10MB)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        alert('File is too large. Maximum file size is 10MB.');
+        return;
+      }
+      
+      setEditFile(selectedFile);
+    }
+  };
+
+  // Upload file to Supabase storage
+  const uploadFile = async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`;
+    
+    setFileUploading(true);
+    
+    try {
+      const { data, error } = await supabase.storage
+        .from('announcement-files')
+        .upload(filePath, file);
+      
+      if (error) throw error;
+      
+      return {
+        path: filePath,
+        name: file.name,
+        type: file.type
+      };
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error uploading file. Please try again.');
+      return null;
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
+  // Delete file from Supabase storage
+  const deleteFile = async (filePath) => {
+    try {
+      const { error } = await supabase.storage
+        .from('announcement-files')
+        .remove([filePath]);
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
+  };
+
+  // Get public URL for file
+  const getFileURL = (filePath) => {
+    return supabase.storage
+      .from('announcement-files')
+      .getPublicUrl(filePath).data.publicUrl;
+  };
+
   // Start editing an announcement
   const handleStartEdit = (announcement) => {
     setEditingAnnouncement(announcement.id);
@@ -73,7 +162,10 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
       title: announcement.title,
       content: announcement.content,
       link: announcement.link || '',
-      linkText: announcement.link_text || ''
+      linkText: announcement.link_text || '',
+      fileName: announcement.file_name || '',
+      filePath: announcement.file_path || '',
+      fileType: announcement.file_type || ''
     });
     setShowForm(false); // Close the new announcement form if it's open
   };
@@ -85,19 +177,91 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
       title: '',
       content: '',
       link: '',
-      linkText: ''
+      linkText: '',
+      fileName: '',
+      filePath: '',
+      fileType: ''
     });
+    setEditFile(null);
+  };
+
+  // Clear file from new announcement form
+  const handleClearFile = () => {
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Clear file from edit form
+  const handleClearEditFile = async () => {
+    const filePath = editFormData.filePath;
+    
+    if (filePath) {
+      // Delete the existing file if it's being removed
+      try {
+        await deleteFile(filePath);
+      } catch (error) {
+        console.error('Error deleting file:', error);
+      }
+    }
+    
+    setEditFormData(prev => ({
+      ...prev,
+      fileName: '',
+      filePath: '',
+      fileType: ''
+    }));
+    
+    setEditFile(null);
+    
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    }
   };
 
   // Save edited announcement
   const handleSaveEdit = async (id) => {
     try {
+      // Check if there's a new file to upload
+      let fileData = {
+        file_name: editFormData.fileName,
+        file_path: editFormData.filePath,
+        file_type: editFormData.fileType
+      };
+
+      // If there's a new file, upload it
+      if (editFile) {
+        // If there's an existing file and we're replacing it, delete the old one
+        if (editFormData.filePath) {
+          await deleteFile(editFormData.filePath);
+        }
+        
+        const uploadedFile = await uploadFile(editFile);
+        if (uploadedFile) {
+          fileData = {
+            file_name: uploadedFile.name,
+            file_path: uploadedFile.path,
+            file_type: uploadedFile.type
+          };
+        }
+      } 
+      // If fileName is empty but filePath exists, it means user cleared the file
+      else if (!editFormData.fileName && editFormData.filePath) {
+        await deleteFile(editFormData.filePath);
+        fileData = {
+          file_name: null,
+          file_path: null,
+          file_type: null
+        };
+      }
+      
       const updatedItem = {
         title: editFormData.title,
         content: editFormData.content,
         link: editFormData.link || null,
         link_text: editFormData.linkText || null,
-        // Don't update created_at or professor_id
+        ...fileData
       };
       
       const { data, error } = await supabase
@@ -119,8 +283,12 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
         title: '',
         content: '',
         link: '',
-        linkText: ''
+        linkText: '',
+        fileName: '',
+        filePath: '',
+        fileType: ''
       });
+      setEditFile(null);
     } catch (error) {
       console.error('Error updating announcement:', error);
       alert('Error updating announcement. Please try again.');
@@ -132,6 +300,19 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     e.preventDefault();
     
     try {
+      // Upload file if present
+      let fileData = {};
+      if (file) {
+        const uploadedFile = await uploadFile(file);
+        if (uploadedFile) {
+          fileData = {
+            file_name: uploadedFile.name,
+            file_path: uploadedFile.path,
+            file_type: uploadedFile.type
+          };
+        }
+      }
+      
       // Create new announcement
       const newItem = {
         title: newAnnouncement.title,
@@ -139,7 +320,8 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
         link: newAnnouncement.link || null,
         link_text: newAnnouncement.linkText || null,
         professor_id: user.id,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        ...fileData
       };
       
       const { data, error } = await supabase
@@ -159,6 +341,10 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
         link: '',
         linkText: ''
       });
+      setFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       
       // Hide form after submission
       setShowForm(false);
@@ -173,6 +359,15 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
     if (!confirm('Are you sure you want to delete this announcement?')) return;
     
     try {
+      // Get the announcement to delete
+      const announcementToDelete = announcements.find(a => a.id === id);
+      
+      // Delete associated file if it exists
+      if (announcementToDelete.file_path) {
+        await deleteFile(announcementToDelete.file_path);
+      }
+      
+      // Delete the announcement
       const { error } = await supabase
         .from('announcements')
         .delete()
@@ -192,6 +387,21 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Function to get file icon based on file type
+  const getFileIcon = (fileType) => {
+    if (!fileType) return '📄';
+    
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word') || fileType.includes('document')) return '📝';
+    if (fileType.includes('sheet') || fileType.includes('excel')) return '📊';
+    if (fileType.includes('image')) return '🖼️';
+    if (fileType.includes('video')) return '🎬';
+    if (fileType.includes('audio')) return '🔊';
+    if (fileType.includes('zip') || fileType.includes('compressed')) return '🗜️';
+    
+    return '📄';
   };
 
   return (
@@ -327,7 +537,7 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
               />
             </div>
             
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '15px' }}>
               <label style={{ 
                 display: 'block', 
                 marginBottom: '6px',
@@ -351,6 +561,63 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
               />
             </div>
             
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '6px',
+                fontWeight: '500',
+                color: '#555'
+              }}>
+                Attachment (optional)
+              </label>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}>
+                <input 
+                  type="file" 
+                  onChange={handleFileChange}
+                  ref={fileInputRef}
+                  style={{
+                    padding: '8px',
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px'
+                  }}
+                />
+                {file && (
+                  <div style={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '8px 12px',
+                    backgroundColor: '#f0f7ff',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem'
+                  }}>
+                    <span>{file.name} ({(file.size / 1024).toFixed(2)} KB)</span>
+                    <button 
+                      type="button" 
+                      onClick={handleClearFile}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#dc3545',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        marginLeft: 'auto'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                <small style={{ color: '#666' }}>
+                  Accepted file types: PDF, Word, Excel, images, etc. Max size: 10MB
+                </small>
+              </div>
+            </div>
+            
             <button 
               type="submit" 
               style={{
@@ -363,10 +630,15 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
                 fontSize: '1rem',
                 width: '100%',
                 fontWeight: '500',
-                transition: 'background-color 0.2s'
+                transition: 'background-color 0.2s',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '10px'
               }}
+              disabled={fileUploading}
             >
-              Post Announcement
+              {fileUploading ? 'Uploading...' : 'Post Announcement'}
             </button>
           </form>
         </div>
@@ -501,7 +773,7 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
                     />
                   </div>
                   
-                  <div style={{ marginBottom: '20px' }}>
+                  <div style={{ marginBottom: '15px' }}>
                     <label style={{ 
                       display: 'block', 
                       marginBottom: '6px',
@@ -524,6 +796,103 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
                       }}
                     />
                   </div>
+
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '6px',
+                      fontWeight: '500',
+                      color: '#555'
+                    }}>
+                      Attachment (optional)
+                    </label>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}>
+                      {/* Show existing file if one exists */}
+                      {editFormData.fileName && !editFile && (
+                        <div style={{ 
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '8px 12px',
+                          backgroundColor: '#f0f7ff',
+                          borderRadius: '4px',
+                          fontSize: '0.9rem'
+                        }}>
+                          <span>{getFileIcon(editFormData.fileType)} {editFormData.fileName}</span>
+                          <button 
+                            type="button" 
+                            onClick={handleClearEditFile}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#dc3545',
+                              cursor: 'pointer',
+                              fontSize: '0.9rem',
+                              marginLeft: 'auto'
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* File input for selecting a new file */}
+                      {!editFormData.fileName || editFile ? (
+                        <>
+                          <input 
+                            type="file" 
+                            onChange={handleEditFileChange}
+                            ref={editFileInputRef}
+                            style={{
+                              padding: '8px',
+                              border: '1px solid #ced4da',
+                              borderRadius: '4px'
+                            }}
+                          />
+                          {/* Show selected file info if a new file is selected */}
+                          {editFile && (
+                            <div style={{ 
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              backgroundColor: '#f0f7ff',
+                              borderRadius: '4px',
+                              fontSize: '0.9rem'
+                            }}>
+                              <span>{editFile.name} ({(editFile.size / 1024).toFixed(2)} KB)</span>
+                              <button 
+                                type="button" 
+                                onClick={() => {
+                                  setEditFile(null);
+                                  if (editFileInputRef.current) {
+                                    editFileInputRef.current.value = '';
+                                  }
+                                  }}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#dc3545',
+                                  cursor: 'pointer',
+                                  fontSize: '0.9rem',
+                                  marginLeft: 'auto'
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      ) : null}
+                      <small style={{ color: '#666' }}>
+                        Accepted file types: PDF, Word, Excel, images, etc. Max size: 10MB
+                      </small>
+                    </div>
+                  </div>
                   
                   <div style={{ 
                     display: 'flex',
@@ -539,10 +908,15 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
                         borderRadius: '4px',
                         cursor: 'pointer',
                         fontSize: '0.9rem',
-                        flex: '1'
+                        flex: '1',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '5px'
                       }}
+                      disabled={fileUploading}
                     >
-                      Save Changes
+                      {fileUploading ? 'Uploading...' : 'Save Changes'}
                     </button>
                     <button 
                       onClick={handleCancelEdit}
@@ -598,6 +972,34 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
                     {announcement.content}
                   </div>
                   
+                  {/* Display file attachment if it exists */}
+                  {announcement.file_path && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <a 
+                        href={getFileURL(announcement.file_path)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#0066cc',
+                          textDecoration: 'none',
+                          fontWeight: '500',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          padding: '8px 12px',
+                          backgroundColor: '#f0f7ff',
+                          borderRadius: '4px',
+                          fontSize: '0.9rem'
+                        }}
+                        download={announcement.file_name}
+                      >
+                        <span>{getFileIcon(announcement.file_type)}</span>
+                        <span>Download: {announcement.file_name}</span>
+                      </a>
+                    </div>
+                  )}
+                  
+                  {/* Display link if it exists */}
                   {announcement.link && (
                     <div style={{ marginBottom: '10px' }}>
                       <a 
