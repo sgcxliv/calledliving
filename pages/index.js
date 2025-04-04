@@ -44,11 +44,11 @@ export default function Home() {
     The nature of this class is spontaneous, so we count on you to stay informed. Weekly pages with required readings, reflection prompts, and instructions for assignments will be published one week in advance under the "Life Cycle" Tab. </p>
         
         <div style={{ marginTop: '30px' }}>
-          <h3>This Week: The Life of Students. </h3>
+          <h3>This Week: Childhood, or The No-Place. </h3>
           <ul>
-            <li>On Tuesday April 1st, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
-            <li>On Thursday April 3rd, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
-            <li>TO-DO for Next Week: Bing Nursery Signups, Family Photo Upload for Week 2</li>
+            <li>On Tuesday April 8th, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
+            <li>On Thursday April 10th, We are meeting at: 1:30 - 2:50PM, Meyer Green Field</li>
+            <li>TO-DO for Week 2: Field Trip Poll, Midterm/Final Poll, Family Photo Upload</li>
           </ul>
         </div>
         
