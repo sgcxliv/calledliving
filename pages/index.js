@@ -48,7 +48,7 @@ export default function Home() {
           <ul>
             <li>On Tuesday April 8th, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
             <li>On Thursday April 10th, We are meeting at: 1:30 - 2:50PM, Meyer Green Field</li>
-            <li>TO-DO for Week 2: Field Trip Poll, Midterm/Final Poll, Family Photo Upload</li>
+            <li>TO-DO for Week 2: Play at Bing Nursery, Complete Field Trip + Midterm/Final Poll, Upload a Family Photo</li>
           </ul>
         </div>
         
