@@ -384,7 +384,6 @@ export default function LifecyclePage() {
           marginBottom: '20px'
         }}>
           <h1>Week {id}: {titles[id]}</h1>
-          )}
         </header>
 
         {/* Reflection Prompt Section */}
