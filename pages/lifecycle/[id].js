@@ -384,11 +384,6 @@ export default function LifecyclePage() {
           marginBottom: '20px'
         }}>
           <h1>Week {id}: {titles[id]}</h1>
-          {/* Display user status only if the user is logged in */}
-          {currentUser && (
-            <div style={{ marginTop: '10px', fontSize: '0.9rem' }}>
-              <span>Logged in as: {name || currentUser.email}</span>
-            </div>
           )}
         </header>
 
