@@ -1,4 +1,4 @@
-  // pages/lifecycle/[id].js
+// pages/lifecycle/[id].js
 import Layout from '../../components/Layout';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
@@ -17,6 +17,9 @@ export default function LifecyclePage() {
   const [submissions, setSubmissions] = useState([]);
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Add new state for the current user
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const titles = {
     '1': 'What is Called Living?',
@@ -53,10 +56,9 @@ export default function LifecyclePage() {
   };
 
   const reflectionPrompts = {
-  '1': 'No prompt this week. Reflections Start Week 2!',
-  '2': 'Prompt: What is called "Childhood"?',
-};
-
+    '1': 'No prompt this week. Reflections Start Week 2!',
+    '2': 'Prompt: What is called "Childhood"?',
+  };
 
   const requiredReadings = {
     '1': [
@@ -76,6 +78,58 @@ export default function LifecyclePage() {
       }
     ]
   };
+
+  // Check for authenticated user on page load
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get current session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting auth session:', error);
+          return;
+        }
+        
+        if (session?.user) {
+          setCurrentUser(session.user);
+          
+          // If user exists but name is empty, try to get their name from profile
+          if (!name) {
+            const { data, error: profileError } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (!profileError && data?.full_name) {
+              setName(data.full_name);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkUser();
+    
+    // Set up auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user || null);
+    });
+    
+    return () => {
+      // Clean up the subscription when the component unmounts
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, []);
 
   // Fetch submissions when the page loads
   useEffect(() => {
@@ -107,85 +161,86 @@ export default function LifecyclePage() {
     }
   };
 
-// Modified handleDeleteSubmission function with better debugging and error handling
-const handleDeleteSubmission = async (submissionId, filePath) => {
-  if (!window.confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
-    return;
-  }
+  // Modified handleDeleteSubmission function with authorization check
+  const handleDeleteSubmission = async (submissionId, filePath, userId) => {
+    // Check if user is logged in
+    if (!currentUser) {
+      setError('You must be logged in to delete submissions.');
+      return;
+    }
+    
+    // Check if the current user is the creator of this submission
+    if (userId !== currentUser.id) {
+      setError('You can only delete your own submissions.');
+      return;
+    }
+    
+    if (!window.confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
+      return;
+    }
 
-  try {
-    setIsDeleting(true);
-    setError(null);
-    
-    console.log('Starting deletion process for ID:', submissionId);
-    
-    // Check if the submission exists in the database first
-    const { data: checkData, error: checkError } = await supabase
-      .from('student_contributions')
-      .select('id')
-      .eq('id', submissionId)
-      .single();
-    
-    if (checkError) {
-      console.error('Error checking submission existence:', checkError);
-    } else {
-      console.log('Found submission in database:', checkData);
+    try {
+      setIsDeleting(true);
+      setError(null);
+      
+      console.log('Starting deletion process for ID:', submissionId);
+      
+      // Step 1: Delete the database record first
+      const { data: deleteData, error: deleteError } = await supabase
+        .from('student_contributions')
+        .delete()
+        .match({ 
+          id: submissionId,
+          user_id: currentUser.id // Ensure the user is the owner
+        })
+        .select();
+      
+      if (deleteError) {
+        console.error('Database deletion error:', deleteError);
+        throw deleteError;
+      }
+      
+      console.log('Database deletion result:', deleteData);
+      
+      // If no rows were affected, the user might not be the owner
+      if (!deleteData || deleteData.length === 0) {
+        throw new Error('No records were deleted. You may not have permission to delete this submission.');
+      }
+      
+      // Step 2: Delete the file from storage
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('contributions')
+        .remove([filePath]);
+      
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+        console.warn('File deletion failed but database record was removed');
+      } else {
+        console.log('Storage deletion successful:', storageData);
+      }
+      
+      // Step 3: Update local state immediately
+      setSubmissions(prevSubmissions => 
+        prevSubmissions.filter(submission => submission.id !== submissionId)
+      );
+      
+    } catch (error) {
+      console.error('Error in delete operation:', error);
+      setError('Error deleting submission: ' + (error.message || 'Unknown error'));
+      alert('Failed to delete submission. Please try again later.');
+    } finally {
+      setIsDeleting(false);
     }
-    
-    // Step 1: Delete the database record first - MAKE SURE TO USE MATCH CONDITIONS
-    const { data: deleteData, error: deleteError } = await supabase
-      .from('student_contributions')
-      .delete()
-      .match({ id: submissionId }) // Using match instead of eq for more reliable deletion
-      .select(); // Get back the deleted record
-    
-    if (deleteError) {
-      console.error('Database deletion error:', deleteError);
-      throw deleteError;
+  };
+
+  // Redirect to login page if user tries to access a protected action
+  const redirectToLogin = () => {
+    // Save current page to localStorage for redirect after login
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('redirectAfterLogin', window.location.pathname);
     }
-    
-    console.log('Database deletion result:', deleteData);
-    
-    // Step 2: Delete the file from storage
-    const { data: storageData, error: storageError } = await supabase.storage
-      .from('contributions')
-      .remove([filePath]);
-    
-    if (storageError) {
-      console.error('Storage deletion error:', storageError);
-      console.warn('File deletion failed but database record was removed');
-    } else {
-      console.log('Storage deletion successful:', storageData);
-    }
-    
-    // Step 3: Update local state immediately
-    setSubmissions(prevSubmissions => 
-      prevSubmissions.filter(submission => submission.id !== submissionId)
-    );
-    
-    // Step 4: Verify deletion was successful by checking if the record still exists
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('student_contributions')
-      .select('id')
-      .eq('id', submissionId)
-      .single();
-    
-    if (verifyError && verifyError.code === 'PGRST116') {
-      // PGRST116 means "no rows returned" - this is good, the record is gone
-      console.log('Verified deletion was successful - record no longer exists');
-    } else if (verifyData) {
-      console.error('Deletion verification failed - record still exists:', verifyData);
-      throw new Error('Failed to delete - record still exists in database');
-    }
-    
-  } catch (error) {
-    console.error('Error in delete operation:', error);
-    setError('Error deleting submission: ' + (error.message || 'Unknown error'));
-    alert('Failed to delete submission. Please try again later.');
-  } finally {
-    setIsDeleting(false);
-  }
-};
+    router.push('/login');
+  };
 
   if (!id || !titles[id]) {
     return (
@@ -207,6 +262,12 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if user is logged in
+    if (!currentUser) {
+      setError('You must be logged in to submit content');
+      return;
+    }
     
     if (!file) {
       setError('Please select a file to upload');
@@ -242,7 +303,8 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
           file_path: filePath,
           file_size: file.size,
           file_type: file.type,
-          created_at: new Date()
+          created_at: new Date(),
+          user_id: currentUser.id // Associate with the current user
         });
           
       if (insertError) {
@@ -251,8 +313,6 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
       
       // Success!
       setSuccess(true);
-      setName('');
-      setMediaType('image');
       setCaption('');
       setFile(null);
       
@@ -324,6 +384,12 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
           marginBottom: '20px'
         }}>
           <h1>Week {id}: {titles[id]}</h1>
+          {/* Display user status only if the user is logged in */}
+          {currentUser && (
+            <div style={{ marginTop: '10px', fontSize: '0.9rem' }}>
+              <span>Logged in as: {name || currentUser.email}</span>
+            </div>
+          )}
         </header>
 
         {/* Reflection Prompt Section */}
@@ -396,92 +462,94 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
               </div>
             </div>
             
-            {/* Upload Section */}
-            <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-              <h2>Upload Your Contribution</h2>              
-              {success && (
-                <div style={{ padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '15px' }}>
-                  Your contribution has been uploaded successfully!
-                </div>
-              )}
-              
-              {error && (
-                <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '15px' }}>
-                  {error}
-                </div>
-              )}
-              
-              <form onSubmit={handleSubmit} style={{ marginTop: '20px', padding: '15px', backgroundColor: '#fff', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                <div style={{ marginBottom: '15px' }}>
-                  <label htmlFor="name" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Your Name</label>
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    disabled={uploading}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
+            {/* Upload Section - Only visible to students who are logged in */}
+            {currentUser && (
+              <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
+                <h2>Upload Your Contribution</h2>              
+                {success && (
+                  <div style={{ padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '15px' }}>
+                    Your contribution has been uploaded successfully!
+                  </div>
+                )}
                 
-                <div style={{ marginBottom: '15px' }}>
-                  <label htmlFor="mediaType" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Media Type</label>
-                  <select
-                    id="mediaType"
-                    value={mediaType}
-                    onChange={(e) => setMediaType(e.target.value)}
+                {error && (
+                  <div style={{ padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '15px' }}>
+                    {error}
+                  </div>
+                )}
+                
+                <form onSubmit={handleSubmit} style={{ marginTop: '20px', padding: '15px', backgroundColor: '#fff', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                  <div style={{ marginBottom: '15px' }}>
+                    <label htmlFor="name" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Your Name</label>
+                    <input
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      disabled={uploading}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '15px' }}>
+                    <label htmlFor="mediaType" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Media Type</label>
+                    <select
+                      id="mediaType"
+                      value={mediaType}
+                      onChange={(e) => setMediaType(e.target.value)}
+                      disabled={uploading}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    >
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                      <option value="text">Text</option>
+                    </select>
+                  </div>
+                  
+                  <div style={{ marginBottom: '15px' }}>
+                    <label htmlFor="file" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>File</label>
+                    <input
+                      id="file"
+                      type="file"
+                      onChange={handleFileChange}
+                      required
+                      disabled={uploading}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '15px' }}>
+                    <label htmlFor="caption" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Caption or Description</label>
+                    <textarea
+                      id="caption"
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      disabled={uploading}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', minHeight: '100px' }}
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
                     disabled={uploading}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ 
+                      backgroundColor: uploading ? '#999' : '#2d4059', 
+                      color: 'white', 
+                      border: 'none', 
+                      padding: '10px 15px', 
+                      borderRadius: '4px', 
+                      cursor: uploading ? 'not-allowed' : 'pointer',
+                      fontSize: '16px'
+                    }}
                   >
-                    <option value="image">Image</option>
-                    <option value="video">Video</option>
-                    <option value="text">Text</option>
-                  </select>
-                </div>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label htmlFor="file" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>File</label>
-                  <input
-                    id="file"
-                    type="file"
-                    onChange={handleFileChange}
-                    required
-                    disabled={uploading}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label htmlFor="caption" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Caption or Description</label>
-                  <textarea
-                    id="caption"
-                    value={caption}
-                    onChange={(e) => setCaption(e.target.value)}
-                    disabled={uploading}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', minHeight: '100px' }}
-                  />
-                </div>
-                
-                <button
-                  type="submit"
-                  disabled={uploading}
-                  style={{ 
-                    backgroundColor: uploading ? '#999' : '#2d4059', 
-                    color: 'white', 
-                    border: 'none', 
-                    padding: '10px 15px', 
-                    borderRadius: '4px', 
-                    cursor: uploading ? 'not-allowed' : 'pointer',
-                    fontSize: '16px'
-                  }}
-                >
-                  {uploading ? 'Uploading...' : 'Submit Contribution'}
-                </button>
-              </form>
-            </div>
+                    {uploading ? 'Uploading...' : 'Submit Contribution'}
+                  </button>
+                </form>
+              </div>
+            )}
             
-            {/* Class Submissions Section */}
+            {/* Class Submissions Section - Visible to everyone */}
             <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
               <h2>Class Submissions</h2>
               
@@ -491,8 +559,28 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
                 </div>
               )}
               
+              {!currentUser && (
+                <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f0f7ff', borderRadius: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ margin: '0' }}>Want to share your own photo? Log in to contribute.</p>
+                  <button 
+                    onClick={redirectToLogin}
+                    style={{ 
+                      backgroundColor: '#2d4059', 
+                      color: 'white', 
+                      border: 'none', 
+                      padding: '8px 15px', 
+                      borderRadius: '4px', 
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Log in
+                  </button>
+                </div>
+              )}
+              
               {submissions.length === 0 ? (
-                <p>No submissions yet. Be the first to contribute!</p>
+                <p>No submissions yet. {currentUser ? 'Be the first to contribute!' : 'Check back later!'}</p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }}>
                   {submissions.map((submission) => (
@@ -503,25 +591,27 @@ const handleDeleteSubmission = async (submissionId, filePath) => {
                       boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
                       position: 'relative'
                     }}>
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => handleDeleteSubmission(submission.id, submission.file_path)}
-                        disabled={isDeleting}
-                        style={{ 
-                          position: 'absolute', 
-                          top: '10px', 
-                          right: '10px', 
-                          backgroundColor: isDeleting ? '#999' : '#dc3545', 
-                          color: 'white', 
-                          border: 'none', 
-                          borderRadius: '4px', 
-                          padding: '5px 10px',
-                          cursor: isDeleting ? 'not-allowed' : 'pointer',
-                          zIndex: 10
-                        }}
-                      >
-                        Delete
-                      </button>
+                      {/* Only show Delete Button if user owns this submission */}
+                      {currentUser && currentUser.id === submission.user_id && (
+                        <button
+                          onClick={() => handleDeleteSubmission(submission.id, submission.file_path, submission.user_id)}
+                          disabled={isDeleting}
+                          style={{ 
+                            position: 'absolute', 
+                            top: '10px', 
+                            right: '10px', 
+                            backgroundColor: isDeleting ? '#999' : '#dc3545', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '4px', 
+                            padding: '5px 10px',
+                            cursor: isDeleting ? 'not-allowed' : 'pointer',
+                            zIndex: 10
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
                       
                       <div style={{ padding: '12px 15px', borderBottom: '1px solid #eee', backgroundColor: '#f9f9f9' }}>
                         <p style={{ fontWeight: 'bold', margin: '0', fontSize: '16px' }}>{submission.contributor_name}</p>
