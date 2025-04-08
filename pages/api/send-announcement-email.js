@@ -4,10 +4,10 @@ import nodemailer from 'nodemailer';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Use service role key for admin access
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Email configuration (use environment variables in production)
+// Email configuration
 const emailConfig = {
   host: process.env.EMAIL_HOST,
   port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -18,16 +18,11 @@ const emailConfig = {
   },
 };
 
-// Create helper function to strip HTML tags for the plaintext version
-const stripHtml = (html) => {
-  return html.replace(/<[^>]*>?/gm, '');
-};
-
-// Function to create a plaintext preview of announcement content
+// Helper functions
+const stripHtml = (html) => html.replace(/<[^>]*>?/gm, '');
 const createTextPreview = (content, maxLength = 150) => {
   const stripped = stripHtml(content);
-  if (stripped.length <= maxLength) return stripped;
-  return stripped.substring(0, maxLength) + '...';
+  return stripped.length <= maxLength ? stripped : stripped.substring(0, maxLength) + '...';
 };
 
 export default async function handler(req, res) {
@@ -37,35 +32,60 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Create an Ethereal test account
+    // Log environment variables (redacted for security)
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      hasEmailHost: !!process.env.EMAIL_HOST,
+      hasEmailUser: !!process.env.EMAIL_USER,
+      hasEmailPass: !!process.env.EMAIL_PASSWORD,
+      emailFrom: process.env.EMAIL_FROM || 'default@example.com',
+      nodeEnv: process.env.NODE_ENV
+    });
+
+    const { announcementId, courseId } = req.body;
+    console.log('Request payload:', { announcementId, courseId });
+    
+    if (!announcementId) {
+      return res.status(400).json({ error: 'Announcement ID is required' });
+    }
+
+    // Create a transporter based on environment
     let transporter;
+    let isEtherealAccount = false;
+    let etherealAccount = null;
+    
+    // Always attempt to create an Ethereal account for testing
+    // This ensures we can see the emails even in production
     try {
-      // Create test account
-      const testAccount = await nodemailer.createTestAccount();
-      console.log('Ethereal test account created:', {
-        user: testAccount.user,
-        pass: testAccount.pass
-      });
-      
-      // Create transporter with test account
+      etherealAccount = await nodemailer.createTestAccount();
       transporter = nodemailer.createTransport({
         host: 'smtp.ethereal.email',
         port: 587,
         secure: false,
         auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
+          user: etherealAccount.user,
+          pass: etherealAccount.pass,
         },
       });
-    } catch (error) {
-      console.error('Error creating test account:', error);
-      transporter = nodemailer.createTransport(emailConfig); // Fallback to regular config
+      isEtherealAccount = true;
+      console.log('Using Ethereal test account:', etherealAccount.user);
+    } catch (etherealError) {
+      console.error('Failed to create Ethereal account, using regular config:', etherealError);
+      // Fall back to regular email config
+      transporter = nodemailer.createTransport(emailConfig);
     }
 
-    const { announcementId, courseId } = req.body;
-    
-    if (!announcementId) {
-      return res.status(400).json({ error: 'Announcement ID is required' });
+    // Test SMTP connection
+    try {
+      await transporter.verify();
+      console.log('SMTP connection verified successfully');
+    } catch (verifyError) {
+      console.error('SMTP verification failed:', verifyError);
+      return res.status(500).json({ 
+        error: 'Email service configuration error', 
+        details: verifyError.message 
+      });
     }
 
     // 1. Get the announcement details
@@ -83,9 +103,9 @@ export default async function handler(req, res) {
     if (!announcement) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
+    console.log('Announcement found:', { id: announcement.id, title: announcement.title });
 
     // 2. Get all student profiles
-    // Get all user profiles with role 'student'
     const { data: studentProfiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, email')
@@ -97,11 +117,13 @@ export default async function handler(req, res) {
     }
     
     if (!studentProfiles || studentProfiles.length === 0) {
+      console.log('No student profiles found');
       return res.status(200).json({ message: 'No student profiles found to notify' });
     }
     
     // Extract email addresses from student profiles
     const emailAddresses = studentProfiles.map(profile => profile.email).filter(Boolean);
+    console.log(`Found ${emailAddresses.length} student email addresses`);
     
     if (emailAddresses.length === 0) {
       return res.status(200).json({ message: 'No student email addresses found' });
@@ -110,10 +132,7 @@ export default async function handler(req, res) {
     // 3. Create the email content
     const courseName = 'RELIGST18N: What is Called Living?';
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://whatiscalledliving.vercel.app';
-    
-    // Link directly to the main dashboard where announcements are displayed
-    const announcementUrl = siteUrl; // Main dashboard is at the root URL
-    
+    const announcementUrl = siteUrl;
     const hasAttachments = announcement.file_path || announcement.link;
     
     const emailSubject = `[${courseName}] New Announcement: ${announcement.title}`;
@@ -155,41 +174,59 @@ export default async function handler(req, res) {
       This is an automated message from your learning management system. Do not reply to this email.
     `;
 
-    // 4. Send the emails
-    // For production, consider using a batch email service that supports bulk sending
-    // For this example, we'll use BCC to send to all recipients at once
+    // 4. Send the email
+    // For testing purposes, send to a limited set of recipients
+    // In production, you would use the full emailAddresses list
+    const emailFrom = process.env.EMAIL_FROM || 'whatiscalledliving@gmail.com';
+    
+    // For testing, we'll send to just the first recipient or a test email
+    const testRecipient = process.env.NODE_ENV === 'production' 
+      ? (emailAddresses[0] || 'test@example.com')
+      : 'test@example.com';
+    
+    console.log(`Sending test email from ${emailFrom} to ${testRecipient}`);
+    
     const mailOptions = {
-      from: process.env.EMAIL_FROM || 'whatiscalledliving@gmail.com',
-      bcc: emailAddresses, // Use BCC for privacy
+      from: emailFrom,
+      to: testRecipient, // For testing, use a single recipient instead of BCC
+      //bcc: emailAddresses, // Uncomment for production
       subject: emailSubject,
       text: plainTextContent,
       html: emailHtml,
     };
     
-    const info = await transporter.sendMail(mailOptions);
-    
-    // Log preview URL if using Ethereal
-    if (transporter.options.host === 'smtp.ethereal.email') {
-      const previewUrl = nodemailer.getTestMessageUrl(info);
-      console.log('Ethereal Preview URL:', previewUrl);
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log('Email sent successfully:', info.messageId);
       
-      // Include preview URL in response for easier access
-      return res.status(200).json({ 
-        success: true, 
-        message: `Test email created. Check logs for preview URL.`,
-        previewUrl: previewUrl,
-        recipients: emailAddresses.length
+      // Get and log the Ethereal preview URL if available
+      let previewUrl = null;
+      if (isEtherealAccount) {
+        previewUrl = nodemailer.getTestMessageUrl(info);
+        console.log('Ethereal Preview URL:', previewUrl);
+      }
+      
+      // 5. Return success response
+      return res.status(200).json({
+        success: true,
+        message: `Notification email sent to test recipient`,
+        messageId: info.messageId,
+        previewUrl,
+        recipientCount: 1, // For testing
+        usingEthereal: isEtherealAccount
+      });
+    } catch (sendError) {
+      console.error('Error sending email:', sendError);
+      return res.status(500).json({ 
+        error: 'Failed to send email',
+        details: sendError.message
       });
     }
-    
-    // 5. Return success response
-    res.status(200).json({ 
-      success: true, 
-      message: `Notification emails sent to ${emailAddresses.length} recipients` 
-    });
-    
   } catch (error) {
-    console.error('Error sending announcement emails:', error);
-    res.status(500).json({ error: 'Failed to send announcement emails' });
+    console.error('General error in email handler:', error);
+    return res.status(500).json({ 
+      error: 'Failed to process request',
+      details: error.message
+    });
   }
 }
