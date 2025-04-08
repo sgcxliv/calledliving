@@ -416,3 +416,438 @@ button {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Modern Messaging Styles */
+
+/* Main container */
+.messaging-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 12px;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header */
+.messaging-header {
+  padding: 15px 20px;
+  background-color: #3a3a3a;
+  color: white;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.messaging-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+/* Messages area */
+.messaging-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #f8f9fa;
+  min-height: 300px;
+  max-height: 60vh;
+}
+
+/* Empty state */
+.empty-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-messages p {
+  margin: 10px 0;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  color: #ddd;
+}
+
+/* Message component styles */
+.message-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.own-message {
+  align-self: flex-end;
+}
+
+.other-message {
+  align-self: flex-start;
+}
+
+.message-sender {
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  color: #666;
+}
+
+.message-bubble {
+  padding: 12px 16px;
+  border-radius: 18px;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.own-message .message-bubble {
+  background-color: #0084ff;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.other-message .message-bubble {
+  background-color: #e5e5ea;
+  color: #333;
+  border-bottom-left-radius: 4px;
+}
+
+.audio-message {
+  margin-bottom: 8px;
+}
+
+.audio-player {
+  width: 100%;
+  height: 36px;
+  border-radius: 18px;
+}
+
+.own-message .audio-player {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.text-content {
+  margin-bottom: 4px;
+  word-wrap: break-word;
+}
+
+.message-timestamp {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ff3b30;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 59, 48, 0.1);
+}
+
+.delete-confirmation {
+  display: flex;
+  gap: 8px;
+}
+
+.confirm-btn, .cancel-btn {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  background-color: #ff3b30;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #e5e5ea;
+  color: #333;
+}
+
+/* Composer area */
+.messaging-composer {
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  background-color: white;
+}
+
+.message-status {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  background-color: #e5f7ff;
+  color: #0084ff;
+}
+
+.message-status.error {
+  background-color: #ffebee;
+  color: #ff3b30;
+}
+
+.audio-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.record-btn, .upload-btn, .send-btn, .text-send-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.record-btn {
+  background-color: #ff3b30;
+  color: white;
+}
+
+.record-btn.recording {
+  background-color: #ff6b6b;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.upload-btn {
+  background-color: #34c759;
+  color: white;
+}
+
+.send-btn {
+  background-color: #0084ff;
+  color: white;
+}
+
+.record-btn:hover, .upload-btn:hover, .send-btn:hover {
+  filter: brightness(1.1);
+}
+
+.record-btn:disabled, .upload-btn:disabled, .send-btn:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.recording-time {
+  font-family: monospace;
+  margin-left: 8px;
+}
+
+.text-message-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.text-message-input, .caption-input {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  outline: none;
+}
+
+.text-message-input:focus, .caption-input:focus {
+  border-color: #0084ff;
+}
+
+.chars-count {
+  position: absolute;
+  right: 80px;
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.text-send-btn {
+  padding: 8px 16px;
+  background-color: #0084ff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.text-send-btn:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+/* Audio preview */
+.audio-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background-color: #f0f2f5;
+  border-radius: 12px;
+}
+
+.audio-preview .audio-player {
+  width: 100%;
+  height: 40px;
+}
+
+.preview-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Student and Professor List Styles */
+.student-list {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.student-list h3 {
+  margin-top: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.student-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.student-item:hover {
+  background-color: #e9ecef;
+}
+
+.student-name {
+  font-weight: 500;
+}
+
+.new-message-indicator {
+  background-color: #0084ff;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+/* Tab navigation */
+.professor-tabs {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background-color: #f0f2f5;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.tab-btn:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.tab-btn:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.tab-btn.active {
+  background-color: #0084ff;
+  color: white;
+}
+
+.back-btn {
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  background-color: #f0f2f5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .message-container {
+    max-width: 90%;
+  }
+  
+  .control-buttons {
