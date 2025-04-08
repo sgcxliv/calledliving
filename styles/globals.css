@@ -852,3 +852,16 @@ button {
 }
   .control-buttons {
   }
+
+header {
+  background-image: url('/images/header-background.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+}
+
+header h1 {
+  color: white;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
