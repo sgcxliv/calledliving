@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       hasEmailHost: !!process.env.EMAIL_HOST,
       hasEmailUser: !!process.env.EMAIL_USER,
       hasEmailPass: !!process.env.EMAIL_PASSWORD,
-      emailFrom: process.env.EMAIL_FROM || 'default@example.com',
+      emailFrom: process.env.EMAIL_FROM || 'whatiscalledliving@gmail.com',
       nodeEnv: process.env.NODE_ENV
     });
 
@@ -50,31 +50,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Announcement ID is required' });
     }
 
-    // Create a transporter based on environment
-    let transporter;
+    // Create the email transporter
+    // In production, always use the configured email service
+    let transporter = nodemailer.createTransport(emailConfig);
     let isEtherealAccount = false;
-    let etherealAccount = null;
-    
-    // Always attempt to create an Ethereal account for testing
-    // This ensures we can see the emails even in production
-    try {
-      etherealAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: etherealAccount.user,
-          pass: etherealAccount.pass,
-        },
-      });
-      isEtherealAccount = true;
-      console.log('Using Ethereal test account:', etherealAccount.user);
-    } catch (etherealError) {
-      console.error('Failed to create Ethereal account, using regular config:', etherealError);
-      // Fall back to regular email config
-      transporter = nodemailer.createTransport(emailConfig);
-    }
+    let previewUrl = null;
 
     // Test SMTP connection
     try {
@@ -145,7 +125,7 @@ export default async function handler(req, res) {
         </div>
         
         <div style="line-height: 1.6; color: #333;">
-          <p>${createTextPreview(announcement.content, 300)}</p>
+          <p>${announcement.content}</p>
           
           ${hasAttachments ? 
             `<p style="margin-top: 20px; font-style: italic;">This announcement contains files or links that aren't shown in this email.</p>` : ''}
@@ -165,7 +145,7 @@ export default async function handler(req, res) {
       New Announcement: ${announcement.title}
       Posted on ${new Date(announcement.created_at).toLocaleDateString()}
       
-      ${createTextPreview(announcement.content, 300)}
+      ${announcement.content}
       
       ${hasAttachments ? 'This announcement contains files or links that aren\'t shown in this email.\n' : ''}
       
@@ -174,22 +154,14 @@ export default async function handler(req, res) {
       This is an automated message from your learning management system. Do not reply to this email.
     `;
 
-    // 4. Send the email
-    // For testing purposes, send to a limited set of recipients
-    // In production, you would use the full emailAddresses list
+    // 4. Send the email to all students
     const emailFrom = process.env.EMAIL_FROM || 'whatiscalledliving@gmail.com';
     
-    // For testing, we'll send to just the first recipient or a test email
-    const testRecipient = process.env.NODE_ENV === 'production' 
-      ? (emailAddresses[0] || 'test@example.com')
-      : 'test@example.com';
-    
-    console.log(`Sending test email from ${emailFrom} to ${testRecipient}`);
+    console.log(`Sending email from ${emailFrom} to ${emailAddresses.length} students`);
     
     const mailOptions = {
       from: emailFrom,
-      to: testRecipient, // For testing, use a single recipient instead of BCC
-      //bcc: emailAddresses, // Uncomment for production
+      bcc: emailAddresses, // Send to all students using BCC for privacy
       subject: emailSubject,
       text: plainTextContent,
       html: emailHtml,
@@ -199,21 +171,12 @@ export default async function handler(req, res) {
       const info = await transporter.sendMail(mailOptions);
       console.log('Email sent successfully:', info.messageId);
       
-      // Get and log the Ethereal preview URL if available
-      let previewUrl = null;
-      if (isEtherealAccount) {
-        previewUrl = nodemailer.getTestMessageUrl(info);
-        console.log('Ethereal Preview URL:', previewUrl);
-      }
-      
       // 5. Return success response
       return res.status(200).json({
         success: true,
-        message: `Notification email sent to test recipient`,
+        message: `Notification email sent to ${emailAddresses.length} recipients`,
         messageId: info.messageId,
-        previewUrl,
-        recipientCount: 1, // For testing
-        usingEthereal: isEtherealAccount
+        recipientCount: emailAddresses.length
       });
     } catch (sendError) {
       console.error('Error sending email:', sendError);
