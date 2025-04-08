@@ -335,23 +335,28 @@ const handleSubmit = async (e) => {
     setAnnouncements([data[0], ...announcements]);
     
     // Trigger email notification for the new announcement
-    try {
-      await fetch('/api/send-announcement-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          announcementId: data[0].id,
-          courseId: data[0].course_id
-        })
-      });
-      // No need to await the response or handle errors in the UI
-      // It will happen in the background
-    } catch (emailError) {
-      // Log the error but don't interrupt the user flow
-      console.error('Error sending announcement emails:', emailError);
+  try {
+    const response = await fetch('/api/send-announcement-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        announcementId: data[0].id,
+        courseId: data[0].course_id
+      })
+    });
+  
+    // Get the response data
+    const emailResult = await response.json();
+  
+    // Show the preview URL as an alert if available
+    if (emailResult.previewUrl && process.env.NEXT_PUBLIC_SHOW_EMAIL_PREVIEW === 'true') {
+      alert(`📧 Test Email Created! View at: ${emailResult.previewUrl}`);
     }
+  } catch (error) {
+    console.error('Error with email notification:', error);
+  }
     
     // Reset form
     setNewAnnouncement({
