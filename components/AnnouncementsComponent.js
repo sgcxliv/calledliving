@@ -294,65 +294,84 @@ const AnnouncementsComponent = ({ user, canManageAnnouncements }) => {
       alert('Error updating announcement. Please try again.');
     }
   };
-
-  // Handle new announcement form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      // Upload file if present
-      let fileData = {};
-      if (file) {
-        const uploadedFile = await uploadFile(file);
-        if (uploadedFile) {
-          fileData = {
-            file_name: uploadedFile.name,
-            file_path: uploadedFile.path,
-            file_type: uploadedFile.type
-          };
-        }
+  
+// Handle new announcement form submission
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  try {
+    // Upload file if present
+    let fileData = {};
+    if (file) {
+      const uploadedFile = await uploadFile(file);
+      if (uploadedFile) {
+        fileData = {
+          file_name: uploadedFile.name,
+          file_path: uploadedFile.path,
+          file_type: uploadedFile.type
+        };
       }
-      
-      // Create new announcement
-      const newItem = {
-        title: newAnnouncement.title,
-        content: newAnnouncement.content,
-        link: newAnnouncement.link || null,
-        link_text: newAnnouncement.linkText || null,
-        professor_id: user.id,
-        created_at: new Date().toISOString(),
-        ...fileData
-      };
-      
-      const { data, error } = await supabase
-        .from('announcements')
-        .insert([newItem])
-        .select();
-      
-      if (error) throw error;
-      
-      // Add to the beginning of the array (newest first)
-      setAnnouncements([data[0], ...announcements]);
-      
-      // Reset form
-      setNewAnnouncement({
-        title: '',
-        content: '',
-        link: '',
-        linkText: ''
-      });
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      
-      // Hide form after submission
-      setShowForm(false);
-    } catch (error) {
-      console.error('Error creating announcement:', error);
-      alert('Error posting announcement. Please try again.');
     }
-  };
+    
+    // Create new announcement
+    const newItem = {
+      title: newAnnouncement.title,
+      content: newAnnouncement.content,
+      link: newAnnouncement.link || null,
+      link_text: newAnnouncement.linkText || null,
+      professor_id: user.id,
+      created_at: new Date().toISOString(),
+      ...fileData
+    };
+    
+    const { data, error } = await supabase
+      .from('announcements')
+      .insert([newItem])
+      .select();
+    
+    if (error) throw error;
+    
+    // Add to the beginning of the array (newest first)
+    setAnnouncements([data[0], ...announcements]);
+    
+    // Trigger email notification for the new announcement
+    try {
+      await fetch('/api/send-announcement-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          announcementId: data[0].id,
+          courseId: data[0].course_id
+        })
+      });
+      // No need to await the response or handle errors in the UI
+      // It will happen in the background
+    } catch (emailError) {
+      // Log the error but don't interrupt the user flow
+      console.error('Error sending announcement emails:', emailError);
+    }
+    
+    // Reset form
+    setNewAnnouncement({
+      title: '',
+      content: '',
+      link: '',
+      linkText: ''
+    });
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    
+    // Hide form after submission
+    setShowForm(false);
+  } catch (error) {
+    console.error('Error creating announcement:', error);
+    alert('Error posting announcement. Please try again.');
+  }
+};
 
   // Function to handle announcement deletion
   const handleDeleteAnnouncement = async (id) => {
