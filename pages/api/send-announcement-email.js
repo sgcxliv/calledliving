@@ -89,7 +89,7 @@ export default async function handler(req, res) {
     const { data: studentProfiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, email')
-      .eq('role', 'student');
+      .eq('role', 'CDA');
     
     if (profilesError) {
       console.error('Error fetching student profiles:', profilesError);
