@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import AudioRecorder from './AudioRecorder';
-import AnnouncementsComponent from './AnnouncementsComponent';
+import MessageComponent from './MessageComponent';
 
 export default function ProfessorView({ user }) {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('students'); // 'students' or 'announcements'
 
   useEffect(() => {
     loadStudents();
@@ -62,58 +61,26 @@ export default function ProfessorView({ user }) {
   };
 
   const handleDeleteMessage = async (messageId) => {
-    if (!confirm('Are you sure you want to delete this message?')) return;
-    
     try {
-      // Only allow deleting if sender is current user
-      const message = messages.find(m => m.id === messageId);
-      if (message.sender_id !== user.id) {
-        alert("You can only delete messages you've sent.");
-        return;
-      }
-      
-      const { error } = await supabase
-        .from('messages')
-        .delete()
-        .eq('id', messageId);
-      
-      if (error) throw error;
-      
-      // Remove from local state
+      // Remove from local state immediately for better UX
       setMessages(messages.filter(m => m.id !== messageId));
+      
+      // MessageComponent now handles the actual deletion logic
     } catch (error) {
-      console.error('Error deleting message:', error);
-      alert('Error deleting message. Please try again.');
+      console.error('Error handling message deletion:', error);
     }
   };
 
-  // If in student chat mode and a student is selected, show the chat
-  if (activeTab === 'students' && selectedStudent) {
+  // If a student is selected, show the chat
+  if (selectedStudent) {
     return (
       <div>
-        <div className="professor-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'students' ? 'active' : ''}`}
-            onClick={() => setActiveTab('students')}
-          >
-            Student Messages
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'announcements' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('announcements');
-              setSelectedStudent(null);
-            }}
-          >
-            Manage Announcements
-          </button>
-        </div>
 
         <button
           className="back-btn"
           onClick={() => setSelectedStudent(null)}
         >
-          Back to Student List
+          ← Back to Student List
         </button>
         
         <div className="messaging-container">
@@ -123,30 +90,20 @@ export default function ProfessorView({ user }) {
           
           <div className="messaging-body">
             {messages.length === 0 ? (
-              <p style={{ textAlign: 'center', color: '#666' }}>No messages yet with this student.</p>
+              <div className="empty-messages">
+                <div className="empty-icon">💬</div>
+                <p>No messages yet with this student.</p>
+                <p>Record an audio message or send a text message below.</p>
+              </div>
             ) : (
               messages.map(message => (
-                <div key={message.id} className="message">
-                  <div className="message-time">
-                    {new Date(message.created_at).toLocaleString()}
-                  </div>
-                  <div className="message-content">
-                    <audio controls src={message.audio_url}></audio>
-                    {message.sender_id === user.id && (
-                      <div className="message-actions">
-                        <button
-                          className="delete-btn"
-                          onClick={() => handleDeleteMessage(message.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                    <span style={{ fontSize: '12px', display: 'block', marginTop: '5px' }}>
-                      {message.sender_id === user.id ? 'You' : selectedStudent.name}
-                    </span>
-                  </div>
-                </div>
+                <MessageComponent
+                  key={message.id}
+                  message={message}
+                  currentUserId={user.id}
+                  onDelete={handleDeleteMessage}
+                  senderName={message.sender_id === user.id ? 'You' : selectedStudent.name}
+                />
               ))
             )}
           </div>
@@ -164,27 +121,14 @@ export default function ProfessorView({ user }) {
   // Show student list (default view)
   return (
     <div>
-      <div className="professor-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'students' ? 'active' : ''}`}
-          onClick={() => setActiveTab('students')}
-        >
-          Student Messages
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'announcements' ? 'active' : ''}`}
-          onClick={() => setActiveTab('announcements')}
-        >
-          Manage Announcements
-        </button>
-      </div>
-
       <div className="student-list">
         <h3>Student Messages</h3>
         {loading ? (
-          <p style={{ textAlign: 'center', color: '#666' }}>Loading students...</p>
+          <div className="loading-container">Loading students...</div>
         ) : students.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#666' }}>No students enrolled yet.</p>
+          <div className="empty-messages">
+            <p>No students enrolled yet.</p>
+          </div>
         ) : (
           students.map(student => (
             <div
