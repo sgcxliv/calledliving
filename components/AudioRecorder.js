@@ -1,13 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
+export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSent }) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [audioChunks, setAudioChunks] = useState([]);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState('');
+  const [caption, setCaption] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [message, setMessage] = useState('');
+  
   const mediaRecorderRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const fileInputRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   useEffect(() => {
     // Clean up on unmount
@@ -18,28 +25,70 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
       if (mediaRecorderRef.current && isRecording) {
         mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       }
+      
+      // Revoke any object URLs to prevent memory leaks
+      if (audioUrl && audioUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUrl);
+      }
     };
-  }, [isRecording]);
+  }, [isRecording, audioUrl]);
 
   const startRecording = async () => {
     try {
+      // Reset states
+      setAudioBlob(null);
+      setAudioUrl('');
+      setIsPreviewMode(false);
+      audioChunksRef.current = [];
+      
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      
+      // Try to create a MediaRecorder with a widely supported format
+      let mediaRecorder;
+      const mimeTypes = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav'];
+      
+      // Find the first supported MIME type
+      for (const type of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: type });
+          console.log(`Using MIME type: ${type}`);
+          break;
+        }
+      }
+      
+      // Fallback if none of the preferred types are supported
+      if (!mediaRecorder) {
+        mediaRecorder = new MediaRecorder(stream);
+        console.log(`Using default MIME type: ${mediaRecorder.mimeType}`);
+      }
+      
       mediaRecorderRef.current = mediaRecorder;
       
-      const chunks = [];
       mediaRecorder.ondataavailable = (e) => {
-        chunks.push(e.data);
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/mp3' });
-        await uploadAudio(audioBlob);
-        setAudioChunks(chunks);
+      mediaRecorder.onstop = () => {
+        const chunks = audioChunksRef.current;
+        const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+        const url = URL.createObjectURL(blob);
+        
+        setAudioBlob(blob);
+        setAudioUrl(url);
+        setIsPreviewMode(true);
+        
+        console.log('Recording completed:', {
+          format: mediaRecorder.mimeType,
+          size: `${(blob.size / 1024).toFixed(2)} KB`,
+          duration: `${recordingTime} seconds`
+        });
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
+      setMessage('Recording...');
       
       // Start timer
       let seconds = 0;
@@ -54,7 +103,7 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
       }, 1000);
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      alert('Error accessing microphone. Please check your permissions.');
+      setMessage(`Error: ${error.message || 'Could not access microphone'}`);
     }
   };
 
@@ -64,34 +113,68 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       clearInterval(timerIntervalRef.current);
       setIsRecording(false);
-      setRecordingTime(0);
+      setMessage('Recording stopped - preview your message below');
     }
   };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
+  const cancelRecording = () => {
+    stopRecording();
+    setAudioBlob(null);
+    setAudioUrl('');
+    setIsPreviewMode(false);
+    setCaption('');
+    setRecordingTime(0);
+    setMessage('');
+    
+    // Revoke the object URL to free up memory
+    if (audioUrl && audioUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(audioUrl);
     }
   };
 
-  const uploadAudio = async (audioBlob) => {
+  const uploadAudio = async (blob) => {
+    if (!blob || !receiverId) {
+      setMessage('Error: Missing audio data or receiver ID');
+      return;
+    }
+    
+    setIsUploading(true);
+    setMessage('Sending message...');
+    
     try {
-      // Generate unique filename
-      const filename = `${userId}_${new Date().getTime()}.mp3`;
+      // Generate unique filename with original mimetype extension
+      const mimeType = blob.type;
+      const extension = mimeType.split('/')[1] || 'webm';
+      const timestamp = new Date().getTime();
+      const filename = `${userId}_${timestamp}.${extension}`;
+      
+      console.log(`Uploading file: ${filename} (${mimeType})`);
+      
+      // Convert Blob to File for better compatibility
+      const file = new File([blob], filename, { type: mimeType });
       
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('audio-messages')
-        .upload(`public/${filename}`, audioBlob);
+        .upload(`public/${filename}`, file);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw new Error(`Storage error: ${error.message}`);
+      }
+      
+      console.log('File uploaded successfully');
       
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('audio-messages')
         .getPublicUrl(`public/${filename}`);
+      
+      if (!urlData || !urlData.publicUrl) {
+        throw new Error('Failed to get public URL for uploaded file');
+      }
+      
+      console.log('Got public URL:', urlData.publicUrl);
       
       // Save message to database
       const { data: message, error: msgError } = await supabase
@@ -101,20 +184,87 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
             sender_id: userId,
             receiver_id: receiverId,
             file_path: filename,
-            audio_url: urlData.publicUrl
+            audio_url: urlData.publicUrl,
+            caption: caption.trim() || null
           }
         ]);
       
-      if (msgError) throw msgError;
+      if (msgError) {
+        console.error('Database error:', msgError);
+        throw new Error(`Database error: ${msgError.message}`);
+      }
       
+      console.log('Message saved to database');
+      
+      // Clear the audio state after successful upload
+      setAudioBlob(null);
+      setAudioUrl('');
+      setIsPreviewMode(false);
+      setCaption('');
+      setRecordingTime(0);
+      setMessage('Message sent successfully!');
+      
+      // Revoke the object URL to free up memory
+      if (audioUrl && audioUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUrl);
+      }
+      
+      // Notify parent component
       if (onMessageSent) {
         onMessageSent();
       }
-      
-      alert('Audio message sent successfully!');
     } catch (error) {
-      console.error('Error uploading audio:', error);
-      alert('Error sending message. Please try again.');
+      console.error('Error sending message:', error);
+      setMessage(`Error: ${error.message || 'Failed to send message'}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Check if it's an audio file
+    if (!file.type.match('audio.*')) {
+      setMessage('Please upload an audio file');
+      return;
+    }
+    
+    // Check file size (max 10MB - approx 8 min of audio)
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage('File size exceeds 10MB limit. Please keep recordings under 8 minutes.');
+      return;
+    }
+    
+    try {
+      // Create a blob URL for the file so we can preview it
+      const url = URL.createObjectURL(file);
+      setAudioBlob(file);
+      setAudioUrl(url);
+      setIsPreviewMode(true);
+      setMessage('Audio file loaded - preview your message below');
+      
+      // Get the duration of the audio file
+      const audio = new Audio(url);
+      audio.addEventListener('loadedmetadata', () => {
+        const duration = Math.round(audio.duration);
+        setRecordingTime(duration);
+      });
+    } catch (error) {
+      console.error('Error processing audio file:', error);
+      setMessage(`Error: ${error.message || 'Could not process audio file'}`);
+    }
+    
+    // Reset the file input
+    e.target.value = '';
+  };
+
+  const handleSendMessage = () => {
+    if (audioBlob) {
+      uploadAudio(audioBlob);
+    } else {
+      setMessage('No audio recorded or selected');
     }
   };
 
@@ -124,67 +274,153 @@ export default function AudioRecorder({ userId, receiverId, onMessageSent }) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    // Check if it's an audio file
-    if (!file.type.match('audio.*')) {
-      alert('Please upload an audio file.');
-      return;
-    }
-    
-    // Check file size (max 10MB - approx 8 min of audio)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size exceeds 10MB limit. Please keep recordings under 8 minutes.');
-      return;
-    }
-    
-    await uploadAudio(file);
-    e.target.value = '';
+  const handleCaptionChange = (e) => {
+    // Limit caption to 100 characters
+    const text = e.target.value.slice(0, 100);
+    setCaption(text);
   };
 
-  const handleUploadClick = () => {
-    // Trigger the hidden file input
-    fileInputRef.current.click();
+  const handleTextMessageSend = async () => {
+    if (!caption.trim() || !receiverId) {
+      setMessage('Please enter a message');
+      return;
+    }
+    
+    setIsUploading(true);
+    setMessage('Sending message...');
+    
+    try {
+      // Save text message to database
+      const { data, error } = await supabase
+        .from('messages')
+        .insert([
+          {
+            sender_id: userId,
+            receiver_id: receiverId,
+            text_content: caption.trim(),
+            message_type: 'text'
+          }
+        ]);
+      
+      if (error) throw error;
+      
+      setCaption('');
+      setMessage('Message sent successfully!');
+      
+      // Notify parent component
+      if (onMessageSent) {
+        onMessageSent();
+      }
+    } catch (error) {
+      console.error('Error sending text message:', error);
+      setMessage(`Error: ${error.message || 'Failed to send message'}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
-    <div className="messaging-footer">
-      <div className="audio-controls">
-        <button
-          className="audio-btn"
-          onClick={toggleRecording}
-        >
-          <i>{isRecording ? '⏹️' : '🎤'}</i>
-          <span>{isRecording ? 'Stop Recording' : 'Start Recording'}</span>
-          <span style={{ fontSize: '0.8em', marginLeft: '5px' }}>(max 8 min)</span>
-        </button>
-        
-        <button
-          className="audio-btn"
-          onClick={handleUploadClick}
-        >
-          <i>📎</i> Upload Audio
-        </button>
-        
-        {/* Hidden file input - controlled by the Upload Audio button */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          id="audio-upload"
-          className="audio-upload"
-          accept="audio/*"
-          onChange={handleFileUpload}
-          style={{ display: 'none' }} // Hide this input element
-        />
-        
-        {isRecording && (
-          <span className="recording-indicator">
-            Recording... <span>{formatTime(recordingTime)}</span>
-          </span>
-        )}
-      </div>
+    <div className="messaging-composer">
+      {message && (
+        <div className={`message-status ${message.includes('Error') ? 'error' : ''}`}>
+          {message}
+        </div>
+      )}
+      
+      {isPreviewMode ? (
+        // Preview mode (after recording or file selection)
+        <div className="audio-preview">
+          <audio 
+            controls 
+            src={audioUrl}
+            className="audio-player"
+          ></audio>
+          
+          <div className="preview-actions">
+            <input
+              type="text"
+              placeholder="Add a caption (optional, max 100 chars)"
+              value={caption}
+              onChange={handleCaptionChange}
+              maxLength={100}
+              className="caption-input"
+            />
+            <div className="chars-count">{caption.length}/100</div>
+            
+            <div className="button-group">
+              <button
+                className="cancel-btn"
+                onClick={cancelRecording}
+                disabled={isUploading}
+              >
+                Cancel
+              </button>
+              
+              <button
+                className="send-btn"
+                onClick={handleSendMessage}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Sending...' : 'Send Audio'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Recording/Upload mode
+        <div className="audio-controls">
+          <div className="control-buttons">
+            <button
+              className={`record-btn ${isRecording ? 'recording' : ''}`}
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isUploading}
+            >
+              <i className="record-icon">{isRecording ? '⏹️' : '🎤'}</i>
+              <span>{isRecording ? 'Stop' : 'Record'}</span>
+              {isRecording && <span className="recording-time">{formatTime(recordingTime)}</span>}
+            </button>
+            
+            <div className="upload-container">
+              <button
+                className="upload-btn"
+                onClick={() => fileInputRef.current.click()}
+                disabled={isRecording || isUploading}
+              >
+                <i className="upload-icon">📎</i>
+                <span>Upload</span>
+              </button>
+              
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="audio/*"
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+              />
+            </div>
+          </div>
+          
+          <div className="text-message-controls">
+            <input
+              type="text"
+              placeholder="Send a text message (max 100 chars)"
+              value={caption}
+              onChange={handleCaptionChange}
+              maxLength={100}
+              className="text-message-input"
+              disabled={isRecording || isUploading}
+            />
+            <span className="chars-count">{caption.length}/100</span>
+            <button
+              className="text-send-btn"
+              onClick={handleTextMessageSend}
+              disabled={!caption.trim() || isRecording || isUploading}
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
