@@ -30,9 +30,6 @@ const createTextPreview = (content, maxLength = 150) => {
   return stripped.substring(0, maxLength) + '...';
 };
 
-// Create email transporter
-const transporter = nodemailer.createTransport(emailConfig);
-
 export default async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -40,6 +37,31 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Create an Ethereal test account
+    let transporter;
+    try {
+      // Create test account
+      const testAccount = await nodemailer.createTestAccount();
+      console.log('Ethereal test account created:', {
+        user: testAccount.user,
+        pass: testAccount.pass
+      });
+      
+      // Create transporter with test account
+      transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      });
+    } catch (error) {
+      console.error('Error creating test account:', error);
+      transporter = nodemailer.createTransport(emailConfig); // Fallback to regular config
+    }
+
     const { announcementId, courseId } = req.body;
     
     if (!announcementId) {
@@ -62,61 +84,31 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
 
-    // 2. Get course details
-    let courseData;
+    // 2. Get all student profiles
+    // Get all user profiles with role 'student'
+    const { data: studentProfiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .eq('role', 'student');
     
-    if (courseId) {
-      const { data: course, error: courseError } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', courseId)
-        .single();
-      
-      if (!courseError && course) {
-        courseData = course;
-      }
-    }
-
-    // 3. Get all users who should receive this announcement (only enrolled students)
-    // This depends on your database structure, assuming a 'course_enrollments' table
-    // that connects users to courses and has a role field
-    const { data: enrollments, error: enrollmentsError } = await supabase
-      .from('course_enrollments')
-      .select('user_id')
-      .eq('course_id', courseId || announcement.course_id)
-      .eq('role', 'student'); // Only select students, not professors or CDAs
-    
-    if (enrollmentsError) {
-      console.error('Error fetching enrollments:', enrollmentsError);
-      return res.status(500).json({ error: 'Error fetching enrolled students' });
+    if (profilesError) {
+      console.error('Error fetching student profiles:', profilesError);
+      return res.status(500).json({ error: 'Error fetching student profiles' });
     }
     
-    // Extract user IDs
-    const userIds = enrollments.map(enrollment => enrollment.user_id);
-    
-    if (userIds.length === 0) {
-      return res.status(200).json({ message: 'No enrolled students to notify' });
+    if (!studentProfiles || studentProfiles.length === 0) {
+      return res.status(200).json({ message: 'No student profiles found to notify' });
     }
     
-    // 4. Get user email addresses
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('email')
-      .in('id', userIds);
-    
-    if (usersError) {
-      console.error('Error fetching user emails:', usersError);
-      return res.status(500).json({ error: 'Error fetching user emails' });
-    }
-    
-    const emailAddresses = users.map(user => user.email);
+    // Extract email addresses from student profiles
+    const emailAddresses = studentProfiles.map(profile => profile.email).filter(Boolean);
     
     if (emailAddresses.length === 0) {
-      return res.status(200).json({ message: 'No email addresses found' });
+      return res.status(200).json({ message: 'No student email addresses found' });
     }
 
-    // 5. Create the email content
-    const courseName = courseData ? courseData.title || courseData.name : 'RELIGST18N: What is Called Living?';
+    // 3. Create the email content
+    const courseName = 'RELIGST18N: What is Called Living?';
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://whatiscalledliving.vercel.app';
     
     // Link directly to the main dashboard where announcements are displayed
@@ -163,7 +155,7 @@ export default async function handler(req, res) {
       This is an automated message from your learning management system. Do not reply to this email.
     `;
 
-    // 6. Send the emails
+    // 4. Send the emails
     // For production, consider using a batch email service that supports bulk sending
     // For this example, we'll use BCC to send to all recipients at once
     const mailOptions = {
@@ -174,9 +166,23 @@ export default async function handler(req, res) {
       html: emailHtml,
     };
     
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
     
-    // 7. Return success response
+    // Log preview URL if using Ethereal
+    if (transporter.options.host === 'smtp.ethereal.email') {
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      console.log('Ethereal Preview URL:', previewUrl);
+      
+      // Include preview URL in response for easier access
+      return res.status(200).json({ 
+        success: true, 
+        message: `Test email created. Check logs for preview URL.`,
+        previewUrl: previewUrl,
+        recipients: emailAddresses.length
+      });
+    }
+    
+    // 5. Return success response
     res.status(200).json({ 
       success: true, 
       message: `Notification emails sent to ${emailAddresses.length} recipients` 
