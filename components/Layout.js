@@ -60,7 +60,7 @@ export default function Layout({ children, title = 'REGLIST18N: What is Called L
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div id="main-content">
-        <header>
+        <header className="course-header">
           <div className="header-container">
             <h1>RELIGST18N: What is Called Living, Spring 2025</h1>
             {user && (
