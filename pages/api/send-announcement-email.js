@@ -167,7 +167,7 @@ export default async function handler(req, res) {
     // For production, consider using a batch email service that supports bulk sending
     // For this example, we'll use BCC to send to all recipients at once
     const mailOptions = {
-      from: process.env.EMAIL_FROM || 'sgcxliv@stanford.edu',
+      from: process.env.EMAIL_FROM || 'whatiscalledliving@gmail.com',
       bcc: emailAddresses, // Use BCC for privacy
       subject: emailSubject,
       text: plainTextContent,
