@@ -2,7 +2,6 @@ import '../styles/globals.css';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
-import '../styles/messaging-styles.css';
 
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
