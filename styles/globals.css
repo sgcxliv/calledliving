@@ -865,3 +865,450 @@ header h1 {
   margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
+/* Profile Picture Styling */
+.profile-picture-container {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto 15px;
+  border: 3px solid #ddd;
+  background-color: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-picture-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #ddd;
+  color: #666;
+  font-size: 40px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.profile-picture-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+  border: 2px solid #ddd;
+}
+
+.profile-picture-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Profile Header with Avatar */
+.header-with-avatar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-with-avatar .header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  background-color: #f0f2f5;
+  overflow: hidden;
+}
+
+.header-with-avatar .header-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Student Chat Profile Picture */
+.student-chat-header {
+  display: flex;
+  align-items: center;
+}
+
+/* Enhanced Audio Player */
+.custom-audio-player {
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.player-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.control-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.control-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.play-button {
+  font-size: 1.2rem;
+}
+
+.progress-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #0084ff;
+  border-radius: 3px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.time-display {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Transcription */
+.transcription-container {
+  margin-top: 8px;
+}
+
+.transcription-toggle {
+  background: none;
+  border: none;
+  color: #0084ff;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.transcription-toggle:hover {
+  background-color: rgba(0, 132, 255, 0.1);
+}
+
+.transcription-text {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #eaeaea;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+/* Audio Loading/Error */
+.audio-error {
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 6px;
+  color: #d32f2f;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.download-link {
+  color: #0084ff;
+  text-decoration: underline;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* Improved Sender Info */
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.sender-info {
+  display: flex;
+  align-items: center;
+}
+
+.sender-info .profile-picture {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 8px;
+}
+
+.sender-info .profile-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sender-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.message-time {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Student List Improvements */
+.student-conversations {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.student-conversation-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.student-conversation-item:hover {
+  background-color: #f0f2f5;
+}
+
+.conversation-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 12px;
+  border: 2px solid #ddd;
+}
+
+.conversation-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.conversation-details {
+  flex: 1;
+  overflow: hidden;
+}
+
+.conversation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.last-message-time {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.conversation-preview {
+  color: #666;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no-messages {
+  font-style: italic;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+/* User Dashboard Styling */
+.user-dashboard {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-picture-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.profile-picture-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.upload-picture-btn, .remove-picture-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.upload-picture-btn {
+  background-color: #0084ff;
+  color: white;
+}
+
+.upload-picture-btn:hover {
+  background-color: #0066cc;
+}
+
+.remove-picture-btn {
+  background-color: #f8f9fa;
+  color: #ff3b30;
+  border: 1px solid #ff3b30;
+}
+
+.remove-picture-btn:hover {
+  background-color: #ffebee;
+}
+
+.profile-info-section {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  margin-top: 5px;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.save-profile-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  background-color: #0084ff;
+  color: white;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.save-profile-btn:hover {
+  background-color: #0066cc;
+}
+
+.message-status {
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.message-status.success {
+  background-color: #e7f7ed;
+  color: #28a745;
+}
+
+.message-status.error {
+  background-color: #ffebee;
+  color: #ff3b30;
+}
+
+/* Tab Navigation for Student View */
+.student-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  background-color: #f0f2f5;
+  color: #555;
+  border-radius: 30px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background-color: #0084ff;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 132, 255, 0.3);
+}
+
+.tab-btn:hover:not(.active) {
+  background-color: #e4e6eb;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .profile-section {
+    flex-direction: row;
+  }
+  
+  .profile-picture-section {
+    flex: 1;
+  }
+  
+  .profile-info-section {
+    flex: 2;
+  }
+}
