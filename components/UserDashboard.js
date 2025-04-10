@@ -56,9 +56,9 @@ export default function UserDashboard({ user }) {
         setProfileImage(profileData.profile_picture_url);
       }
       
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Error fetching profile:', error);
-      setMessage('Error loading profile data');
     } finally {
       setLoading(false);
     }
