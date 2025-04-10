@@ -171,92 +171,66 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
   };
 
   const uploadAudio = async (blob) => {
-    if (!blob || !receiverId) {
-      setMessage('Error: Missing audio data or receiver ID');
-      return;
+  if (!blob || !receiverId) {
+    setMessage('Error: Missing audio data or receiver ID');
+    return;
+  }
+  
+  setIsUploading(true);
+  setMessage('Sending message...');
+  
+  try {
+    // Generate unique filename
+    const timestamp = new Date().getTime();
+    const filename = `${userId}_${timestamp}.webm`;
+    
+    console.log(`Uploading file: ${filename} (audio/webm)`);
+    
+    // Convert Blob to File for better compatibility
+    const file = new File([blob], filename, { type: 'audio/webm' });
+    
+    // Create FormData to send to your API
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('receiverId', receiverId);
+    formData.append('duration', recordingTime || 0);
+    
+    // Upload via your API
+    const response = await fetch('/api/upload-audio', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to upload audio');
     }
     
-    setIsUploading(true);
-    setMessage('Sending message...');
+    const result = await response.json();
     
-    try {
-      // Generate unique filename
-      const timestamp = new Date().getTime();
-      const filename = `${userId}_${timestamp}.webm`;
-      
-      console.log(`Uploading file: ${filename} (audio/webm)`);
-      
-      // Convert Blob to File for better compatibility
-      const file = new File([blob], filename, { type: 'audio/webm' });
-      
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('audio-messages')
-        .upload(`public/${filename}`, file, {
-          contentType: 'audio/webm',
-          cacheControl: '3600'
-        });
-      
-      if (error) {
-        console.error('Storage upload error:', error);
-        throw new Error(`Storage error: ${error.message}`);
-      }
-      
-      console.log('File uploaded successfully');
-      
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('audio-messages')
-        .getPublicUrl(`public/${filename}`);
-      
-      if (!urlData || !urlData.publicUrl) {
-        throw new Error('Failed to get public URL for uploaded file');
-      }
-      
-      console.log('Got public URL:', urlData.publicUrl);
-      
-      // Save message to database
-      const { data: message, error: msgError } = await supabase
-        .from('messages')
-        .insert([
-          {
-            sender_id: userId,
-            receiver_id: receiverId,
-            file_path: filename,
-            audio_url: urlData.publicUrl,
-            caption: caption.trim() || null,
-            duration: recordingTime
-          }
-        ]);
-      
-      if (msgError) {
-        console.error('Database error:', msgError);
-        throw new Error(`Database error: ${msgError.message}`);
-      }
-      
-      console.log('Message saved to database');
-      
-      // Clear the audio state after successful upload
-      setAudioBlob(null);
-      setAudioUrl('');
-      setIsPreviewMode(false);
-      setCaption('');
-      setRecordingTime(0);
-      setMessage('Message sent successfully!');
-      
-      releaseAudioResources();
-      
-      // Notify parent component
-      if (onMessageSent) {
-        onMessageSent();
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setMessage(`Error: ${error.message || 'Failed to send message'}`);
-    } finally {
-      setIsUploading(false);
+    console.log('Message saved to database');
+    
+    // Clear the audio state after successful upload
+    setAudioBlob(null);
+    setAudioUrl('');
+    setIsPreviewMode(false);
+    setCaption('');
+    setRecordingTime(0);
+    setMessage('Message sent successfully!');
+    
+    releaseAudioResources();
+    
+    // Notify parent component
+    if (onMessageSent) {
+      onMessageSent();
     }
-  };
+  } catch (error) {
+    console.error('Error sending message:', error);
+    setMessage(`Error: ${error.message || 'Failed to send message'}`);
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
