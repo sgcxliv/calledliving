@@ -1,13 +1,63 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 export default function MessageComponent({ message, currentUserId, onDelete, senderName }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  
+  const audioRef = useRef(null);
+  const progressBarRef = useRef(null);
   
   const isOwnMessage = message.sender_id === currentUserId;
   const hasAudio = Boolean(message.audio_url);
   const hasText = Boolean(message.text_content || message.caption);
+  
+  // Set up audio element event listeners
+  useEffect(() => {
+    if (hasAudio && audioRef.current) {
+      const audio = audioRef.current;
+      
+      const handleTimeUpdate = () => {
+        setCurrentTime(audio.currentTime);
+      };
+      
+      const handleLoadedMetadata = () => {
+        setDuration(audio.duration);
+      };
+      
+      const handlePlay = () => {
+        setIsPlaying(true);
+      };
+      
+      const handlePause = () => {
+        setIsPlaying(false);
+      };
+      
+      const handleEnded = () => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+      };
+      
+      // Add event listeners
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.addEventListener('play', handlePlay);
+      audio.addEventListener('pause', handlePause);
+      audio.addEventListener('ended', handleEnded);
+      
+      // Clean up event listeners
+      return () => {
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audio.removeEventListener('play', handlePlay);
+        audio.removeEventListener('pause', handlePause);
+        audio.removeEventListener('ended', handleEnded);
+      };
+    }
+  }, [hasAudio]);
   
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
@@ -51,6 +101,54 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
     setShowDeleteConfirm(false);
   };
   
+  const togglePlayback = () => {
+    if (!audioRef.current) return;
+    
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      // Try to play and handle any errors
+      const playPromise = audioRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error('Error playing audio:', error);
+        });
+      }
+    }
+  };
+  
+  const handleProgressBarClick = (e) => {
+    if (!audioRef.current || !progressBarRef.current) return;
+    
+    const progressBar = progressBarRef.current;
+    const rect = progressBar.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const newPosition = (offsetX / rect.width) * duration;
+    
+    audioRef.current.currentTime = newPosition;
+  };
+  
+  const downloadAudio = () => {
+    if (!message.audio_url) return;
+    
+    // Create temporary link element
+    const a = document.createElement('a');
+    a.href = message.audio_url;
+    a.download = message.file_path || 'audio-message.webm';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+  
+  const formatTime = (timeInSeconds) => {
+    if (isNaN(timeInSeconds)) return "0:00";
+    
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleString(undefined, { 
@@ -70,18 +168,53 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
       
       <div className="message-bubble">
         {hasAudio && (
-          <div className="audio-message">
+          <div className="message-audio-player">
+            {/* Hidden audio element for browser API */}
             <audio 
-              controls 
+              ref={audioRef}
               src={message.audio_url} 
-              className="audio-player" 
-              preload="none"
-            ></audio>
+              preload="metadata"
+              style={{ display: 'none' }}
+            />
+            
+            {/* Custom integrated player UI */}
+            <div className="audio-player-controls">
+              <button 
+                className="player-control-btn play-btn"
+                onClick={togglePlayback}
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isPlaying ? '⏸️' : '▶️'}
+              </button>
+              
+              <div 
+                className="player-progress-bar" 
+                ref={progressBarRef}
+                onClick={handleProgressBarClick}
+              >
+                <div 
+                  className="player-progress-fill"
+                  style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
+                />
+              </div>
+              
+              <div className="player-time">
+                {formatTime(currentTime)}
+              </div>
+              
+              <button 
+                className="player-control-btn download-btn"
+                onClick={downloadAudio}
+                aria-label="Download"
+              >
+                ⬇️
+              </button>
+            </div>
           </div>
         )}
         
         {hasText && (
-          <div className="text-content">
+          <div className="message-text">
             {message.text_content || message.caption}
           </div>
         )}
