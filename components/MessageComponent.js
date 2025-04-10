@@ -1,71 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 export default function MessageComponent({ message, currentUserId, onDelete, senderName }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  
-  const audioRef = useRef(null);
-  const progressBarRef = useRef(null);
   
   const isOwnMessage = message.sender_id === currentUserId;
   const hasAudio = Boolean(message.audio_url);
   const hasText = Boolean(message.text_content || message.caption);
-  
-  // This useEffect ensures audio elements properly initialize
-  useEffect(() => {
-    if (hasAudio && audioRef.current) {
-      // Force reload of audio source to ensure it's properly loaded
-      audioRef.current.load();
-      
-      // Add error handling for audio playback issues
-      audioRef.current.addEventListener('error', (e) => {
-        console.error('Audio playback error:', e);
-      });
-      
-      const audio = audioRef.current;
-      
-      const handleTimeUpdate = () => {
-        setCurrentTime(audio.currentTime);
-      };
-      
-      const handleLoadedMetadata = () => {
-        setDuration(audio.duration);
-      };
-      
-      const handlePlay = () => {
-        setIsPlaying(true);
-      };
-      
-      const handlePause = () => {
-        setIsPlaying(false);
-      };
-      
-      const handleEnded = () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-      };
-      
-      // Add event listeners
-      audio.addEventListener('timeupdate', handleTimeUpdate);
-      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.addEventListener('play', handlePlay);
-      audio.addEventListener('pause', handlePause);
-      audio.addEventListener('ended', handleEnded);
-      
-      // Clean up event listeners
-      return () => {
-        audio.removeEventListener('timeupdate', handleTimeUpdate);
-        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        audio.removeEventListener('play', handlePlay);
-        audio.removeEventListener('pause', handlePause);
-        audio.removeEventListener('ended', handleEnded);
-      };
-    }
-  }, [hasAudio, message.audio_url]);
   
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
@@ -85,7 +27,7 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
       if (message.file_path) {
         const { error: storageError } = await supabase.storage
           .from('audio-messages')
-          .remove([`public/${message.file_path}`]);
+          .remove([message.file_path]);
         
         if (storageError) {
           console.error('Error deleting audio file:', storageError);
@@ -109,52 +51,16 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
     setShowDeleteConfirm(false);
   };
   
-  const togglePlayback = () => {
-    if (!audioRef.current) return;
-    
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      // Try to play and handle any errors
-      const playPromise = audioRef.current.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.error('Error playing audio:', error);
-        });
-      }
-    }
-  };
-  
-  const handleProgressBarClick = (e) => {
-    if (!audioRef.current || !progressBarRef.current) return;
-    
-    const progressBar = progressBarRef.current;
-    const rect = progressBar.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const newPosition = (offsetX / rect.width) * duration;
-    
-    audioRef.current.currentTime = newPosition;
-  };
-  
   const downloadAudio = () => {
     if (!message.audio_url) return;
     
     // Create temporary link element
     const a = document.createElement('a');
     a.href = message.audio_url;
-    a.download = message.file_path || 'audio-message.webm';
+    a.download = message.file_path ? message.file_path.split('/').pop() : 'audio-message.mp3';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
-  
-  const formatTime = (timeInSeconds) => {
-    if (isNaN(timeInSeconds)) return "0:00";
-    
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
   
   const formatTimestamp = (timestamp) => {
@@ -177,18 +83,29 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
       <div className="message-bubble">
         {hasAudio && (
           <div className="audio-message">
-            <audio 
-              ref={audioRef}
-              controls 
-              src={message.audio_url} 
-              className="audio-player"
-              preload="metadata"
-            >
-              <source src={message.audio_url} type="audio/mpeg" />
-              <source src={message.audio_url} type="audio/webm" />
-              <source src={message.audio_url} type="audio/wav" />
-              Your browser does not support the audio element.
-            </audio>
+            <div className="audio-controls">
+              <audio 
+                controls 
+                src={message.audio_url} 
+                className="audio-player"
+              >
+                Your browser does not support the audio element.
+              </audio>
+              
+              <button 
+                onClick={downloadAudio}
+                className="download-btn"
+                title="Download audio"
+              >
+                Download
+              </button>
+            </div>
+            
+            {message.duration && (
+              <div className="audio-duration">
+                Duration: {Math.floor(message.duration / 60)}:{(message.duration % 60).toString().padStart(2, '0')}
+              </div>
+            )}
           </div>
         )}
         
