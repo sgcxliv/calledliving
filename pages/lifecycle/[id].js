@@ -91,7 +91,7 @@ export default function LifecyclePage() {
         title: 'Huizinga, Johan. "Nature and Significance of Play as a Cultural Phenomenon"',
         path: '/readings/huizinga.pdf'
       }
-    ]
+    ],
     '3': [
       {
         title: 'Melville, Herman. "Bartleby, The Scrivener"',
