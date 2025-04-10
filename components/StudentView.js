@@ -9,29 +9,12 @@ export default function StudentView({ user }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [professor, setProfessor] = useState(null);
-  const [userProfiles, setUserProfiles] = useState([]);
 
   useEffect(() => {
     if (user) {
       fetchProfessorAndMessages();
-      fetchUserProfiles();
     }
   }, [user]);
-
-  const fetchUserProfiles = async () => {
-    try {
-      // Fetch all user profiles to get profile pictures
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('user_id, profile_picture_url');
-      
-      if (error) throw error;
-      
-      setUserProfiles(data || []);
-    } catch (error) {
-      console.error('Error fetching user profiles:', error);
-    }
-  };
 
   const fetchProfessorAndMessages = async () => {
     setLoading(true);
@@ -92,14 +75,7 @@ export default function StudentView({ user }) {
     if (professor) {
       loadMessages(professor.id);
     }
-    
-    // Also refresh user profiles to get any updated profile pictures
-    fetchUserProfiles();
   };
-
-  if (loading && activeTab === 'messages') {
-    return <div className="loading-container">Loading conversations...</div>;
-  }
 
   return (
     <div>
@@ -125,7 +101,9 @@ export default function StudentView({ user }) {
           </div>
           
           <div className="messaging-body">
-            {messages.length === 0 ? (
+            {loading ? (
+              <div className="loading-container">Loading messages...</div>
+            ) : messages.length === 0 ? (
               <div className="empty-messages">
                 <div className="empty-icon">💬</div>
                 <p>No messages yet. Start the conversation!</p>
@@ -139,7 +117,6 @@ export default function StudentView({ user }) {
                   currentUserId={user.id}
                   onDelete={handleDeleteMessage}
                   senderName={message.sender_id === user.id ? 'You' : `Professor ${professor?.name || 'Abbasi'}`}
-                  userProfiles={userProfiles}
                 />
               ))
             )}
