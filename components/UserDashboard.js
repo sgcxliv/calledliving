@@ -6,9 +6,7 @@ export default function UserDashboard({ user }) {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
   const [profileImage, setProfileImage] = useState(null);
-  const [bio, setBio] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   
   const fileInputRef = useRef(null);
   
@@ -24,41 +22,23 @@ export default function UserDashboard({ user }) {
     try {
       setLoading(true);
       
-      // Fetch user data
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('email, username')
-        .eq('id', user.id)
-        .single();
-      
-      if (userError && userError.code !== 'PGRST116') {
-        throw userError;
-      }
-      
-      if (userData) {
-        setEmail(userData.email || '');
-        setUsername(userData.username || '');
-      }
-      
       // Fetch user profile
-      const { data: profileData, error: profileError } = await supabase
+      const { data, error } = await supabase
         .from('user_profiles')
-        .select('bio, profile_picture_url')
+        .select('name, profile_picture_url')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      if (profileError && profileError.code !== 'PGRST116') {
-        throw profileError;
+      if (!error) {
+        if (data) {
+          setName(data.name || '');
+          setProfileImage(data.profile_picture_url);
+        }
+      } else {
+        console.error('Error fetching profile:', error);
       }
-      
-      if (profileData) {
-        setBio(profileData.bio || '');
-        setProfileImage(profileData.profile_picture_url);
-      }
-      
-    } 
-    catch (error) {
-      console.error('Error fetching profile:', error);
+    } catch (error) {
+      console.error('Error in profile fetch:', error);
     } finally {
       setLoading(false);
     }
@@ -160,15 +140,13 @@ export default function UserDashboard({ user }) {
     }
   };
   
-  const handleBioChange = (e) => {
-    // Limit bio to 100 characters
-    const text = e.target.value.slice(0, 100);
-    setBio(text);
+  const handleNameChange = (e) => {
+    setName(e.target.value);
   };
   
   const handleSaveProfile = async () => {
     try {
-      await updateProfile({ bio });
+      await updateProfile({ name });
       setMessage('Profile updated successfully');
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -198,7 +176,7 @@ export default function UserDashboard({ user }) {
               />
             ) : (
               <div className="profile-picture-placeholder">
-                {username.charAt(0) || user.email.charAt(0) || '?'}
+                {name ? name.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : '?')}
               </div>
             )}
           </div>
@@ -237,29 +215,16 @@ export default function UserDashboard({ user }) {
         
         <div className="profile-info-section">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="name">Display Name</label>
             <input
               type="text"
-              id="email"
-              value={email}
-              disabled
+              id="name"
+              value={name}
+              onChange={handleNameChange}
+              placeholder="Enter your name"
               className="form-control"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="bio">Bio (max 100 characters)</label>
-            <textarea
-              id="bio"
-              value={bio}
-              onChange={handleBioChange}
-              placeholder="Tell us about yourself..."
-              maxLength={100}
-              className="form-control"
-              rows={3}
               disabled={loading}
-            ></textarea>
-            <div className="chars-count">{bio.length}/100</div>
+            />
           </div>
           
           <button
