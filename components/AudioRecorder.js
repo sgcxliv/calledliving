@@ -306,11 +306,22 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
     }
   };
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+const formatTime = (seconds) => {
+  if (!seconds || !isFinite(seconds)) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+// And make sure the audio duration detection works properly:
+audio.addEventListener('loadedmetadata', () => {
+  if (audio.duration && isFinite(audio.duration)) {
+    const duration = Math.round(audio.duration);
+    setRecordingTime(duration);
+  } else {
+    setRecordingTime(0);
+  }
+});
 
   const handleCaptionChange = (e) => {
     // Limit caption to 100 characters
