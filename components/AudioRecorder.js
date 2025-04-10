@@ -411,7 +411,7 @@ const formatTime = (seconds) => {
               >
                 <div 
                   className="audio-progress-fill"
-                  style={{ width: `${(currentPlaybackTime || 0}%` }}
+                  style={{ width: `${currentPlaybackTime || 0}%` }}
                 />
               </div>
               
