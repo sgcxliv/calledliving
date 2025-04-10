@@ -1224,6 +1224,7 @@ header h1 {
 
 .form-control {
   width: 100%;
+  max-width: 400px; /* Add this line to limit width */
   padding: 10px 15px;
   border-radius: 6px;
   border: 1px solid #ddd;
