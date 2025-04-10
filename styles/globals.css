@@ -1612,3 +1612,113 @@ audio {
     align-self: flex-end;
   }
 }
+/* Custom Audio Player Styles */
+.custom-audio-player {
+  margin-bottom: 16px;
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.audio-control-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.audio-control-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.audio-progress-bar {
+  flex-grow: 1;
+  height: 8px;
+  background-color: #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.audio-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background-color: #0084ff;
+  border-radius: 4px;
+  transition: width 0.1s linear;
+}
+
+.audio-time {
+  font-size: 0.8rem;
+  color: #666;
+  min-width: 80px;
+  text-align: right;
+  font-family: monospace;
+}
+
+/* Recording time styles to make it more visible */
+.recording-time {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-family: monospace;
+  font-weight: bold;
+  min-width: 45px;
+  text-align: center;
+}
+
+/* Record button styling */
+.record-btn.recording {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Improved message status styling */
+.message-status {
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.message-status:not(.error) {
+  background-color: #e1f5fe;
+  color: #0288d1;
+}
+
+.message-status.error {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
