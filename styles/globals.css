@@ -1463,3 +1463,152 @@ audio {
   margin-left: 8px;
   font-size: 0.9rem;
 }
+/* Integrated Audio Player Styles */
+.integrated-audio-player {
+  margin: 8px 0;
+  width: 100%;
+}
+
+.audio-controls-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.own-message .audio-controls-container {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.audio-control-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  padding: 0;
+}
+
+.audio-control-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.own-message .audio-control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.play-btn {
+  font-size: 1.2rem;
+}
+
+.audio-progress {
+  flex-grow: 1;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.own-message .audio-progress {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.audio-progress-filled {
+  height: 100%;
+  background-color: #0084ff;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 2px;
+}
+
+.own-message .audio-progress-filled {
+  background-color: #ffffff;
+}
+
+.audio-time {
+  font-size: 0.75rem;
+  color: #666;
+  min-width: 80px;
+  text-align: center;
+}
+
+.own-message .audio-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.audio-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-control {
+  position: relative;
+}
+
+.speed-btn {
+  font-size: 0.75rem;
+  font-weight: bold;
+  min-width: 30px;
+}
+
+.speed-options {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+  margin-top: 5px;
+}
+
+.speed-option {
+  border: none;
+  background: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.speed-option:hover {
+  background-color: #f0f2f5;
+}
+
+.speed-option.active {
+  font-weight: bold;
+  color: #0084ff;
+}
+
+/* Make sure the entire audio player fits within the message bubble */
+@media (max-width: 480px) {
+  .audio-controls-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .audio-actions {
+    justify-content: space-between;
+  }
+  
+  .audio-time {
+    align-self: flex-end;
+  }
+}
