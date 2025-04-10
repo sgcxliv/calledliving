@@ -9,24 +9,7 @@ export const config = {
   },
 };
 
-// CORS headers for audio files
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',  // In production, change to your domain
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
-  'Access-Control-Allow-Headers': 'Authorization, X-Client-Info, Content-Type, Range, x-requested-with',
-  'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Content-Type',
-};
-
 export default async function handler(req, res) {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, HEAD');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, X-Client-Info, Content-Type, Range, x-requested-with');
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type');
-    return res.status(200).end();
-  }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -60,29 +43,14 @@ export default async function handler(req, res) {
     // Read the file
     const fileBuffer = await readFile(audioFile.filepath);
     
-    // Determine format based on original file
-    let extension = 'mp3';
-    let contentType = 'audio/mpeg';
-
-    // Check original file's type if available
-    if (audioFile.mimetype) {
-      if (audioFile.mimetype.includes('webm')) {
-        extension = 'webm';
-        contentType = 'audio/webm';
-      } else if (audioFile.mimetype.includes('wav')) {
-        extension = 'wav';
-        contentType = 'audio/wav';
-      }
-    }
-    
     // Generate unique filename
-    const filename = `${user.id}_${Date.now()}.${extension}`;
+    const filename = `${user.id}_${Date.now()}.mp3`;
     
     // Upload to Supabase Storage with correct content type
     const { data, error } = await supabase.storage
       .from('audio-messages')
       .upload(`${user.id}/${filename}`, fileBuffer, {
-        contentType: contentType,
+        contentType: 'audio/webm', // Correct MIME type for MP3
         cacheControl: '3600'
       });
     
@@ -109,8 +77,7 @@ export default async function handler(req, res) {
           receiver_id: receiverId,
           file_path: `${user.id}/${filename}`,
           audio_url: urlData.publicUrl,
-          message_type: 'audio',
-          duration: fields.duration ? parseFloat(fields.duration) : null
+          message_type: 'audio'
         }
       ]);
     
@@ -118,11 +85,6 @@ export default async function handler(req, res) {
       console.error('Database error:', msgError);
       return res.status(400).json({ error: msgError.message });
     }
-    
-    // Set CORS headers in response
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      res.setHeader(key, value);
-    });
     
     return res.status(200).json({ 
       success: true, 
