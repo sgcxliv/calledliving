@@ -46,9 +46,9 @@ export default function Home() {
         <div style={{ marginTop: '30px' }}>
           <h3>This Week: Childhood, or The No-Place. </h3>
           <ul>
-            <li>On Tuesday April 8th, We are meeting at: 1:30 - 2:50PM, ENCINA CENTER 464</li>
-            <li>On Thursday April 10th, We are meeting at: 1:30 - 2:50PM, Meyer Green Field</li>
-            <li>TO-DO for Week 2: Play at Bing Nursery, Complete Field Trip + Midterm/Final Poll, Upload a Family Photo</li>
+            <li>On Tuesday April 15th, We are meeting at: 1:30 - 2:50PM, Old Union 122</li>
+            <li>On Thursday April 17th, We are meeting at: 1:30 - 2:50PM, TBD </li>
+            <li>TO-DO: Week 3 Assigned Readings + Movie, Week 3 Pair Interview Video Upload, Week 2 Audio Reflection</li>
           </ul>
         </div>
         
