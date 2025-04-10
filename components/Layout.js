@@ -1,100 +1,92 @@
+import Head from 'next/head';
+import Navbar from './Navbar';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { supabase } from '../lib/supabaseClient';
 import { useRouter } from 'next/router';
 
-export default function Layout({ children, user }) {
+export default function Layout({ children, title = 'REGLIST18N: What is Called Living?' }) {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
-    if (user) {
-      fetchProfilePicture();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
-  
-  const fetchProfilePicture = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('profile_picture_url')
-        .eq('user_id', user.id)
-        .maybeSingle();
-        
-      if (!error && data) {
-        setProfilePicture(data.profile_picture_url);
+    // Get current user in a safe way
+    const getUser = async () => {
+      try {
+        setIsLoading(true);
+        const { data } = await supabase.auth.getUser();
+        setUser(data?.user || null);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching profile picture:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+    };
+
+    getUser();
+
+    // Set up auth state listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    return () => {
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, []);
+
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      router.push('/login');
+      // Redirect to home page after logout
+      router.push('/');
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error('Error signing out:', error.message);
     }
   };
-  
+
   return (
-    <div>
-      <header>
-        <div className="header-container">
-          <div className="logo-section">
-            <h1>Course Dashboard</h1>
+    <>
+      <Head>
+        <title>{title}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
+      <div id="main-content">
+        <header className="course-header">
+          <div className="header-container">
+            <h1>RELIGST18N: What is Called Living, Spring 2025</h1>
+            {user && (
+              <button 
+                onClick={handleLogout}
+                className="logout-button"
+              >
+                Logout
+              </button>
+            )}
           </div>
-          
-          {user && (
-            <div className="user-section">
-              <div className="user-info">
-                <span className="user-email">{user.email}</span>
-              </div>
-              
-              <div className="profile-section">
-                <div className="header-profile-picture">
-                  {profilePicture ? (
-                    <img 
-                      src={profilePicture} 
-                      alt="Profile"
-                      onError={(e) => {e.target.src = '/images/default-avatar.png'}}
-                    />
-                  ) : (
-                    <div className="profile-initial">
-                      {user.email ? user.email.charAt(0).toUpperCase() : '?'}
-                    </div>
-                  )}
-                </div>
-                
-                <button
-                  className="logout-button"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          )}
+        </header>
+        
+        <Navbar user={user} />
+        
+        <main style={{ marginBottom: '10px' }}>
+          {children}
+        </main>
+        
+        <div className="footer" style={{ 
+          marginTop: '5px',
+          paddingTop: '5px',
+          borderTop: '1px solid #eaeaea'
+        }}>
+          This site is managed by Stephanie Cho. Please email <a href="mailto:sgcxliv@stanford.edu">sgcxliv@stanford.edu</a> for any issues.
         </div>
-      </header>
-      
-      <main id="main-content">
-        {children}
-      </main>
-      
-      <footer className="footer">
-        &copy; {new Date().getFullYear()} Course Dashboard - All rights reserved
-      </footer>
-    </div>
+      </div>
+    </>
   );
 }
