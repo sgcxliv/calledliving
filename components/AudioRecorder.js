@@ -125,8 +125,8 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
         setRecordingTime(elapsedSeconds);
         console.log("Timer tick:", elapsedSeconds); // Debug logging
         
-        // Auto-stop after 5 minutes to avoid very large files
-        if (elapsedSeconds >= 300) {
+        // Auto-stop after 10 minutes to avoid very large files
+        if (elapsedSeconds >= 600) {
           stopRecording();
         }
       }, 1000);
@@ -269,8 +269,8 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
     }
     
     // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setMessage('File size exceeds 10MB limit. Please keep recordings under 5 minutes.');
+    if (file.size > 100 * 1024 * 1024) {
+      setMessage('File size exceeds 10MB limit. Please keep recordings under 10 minutes.');
       return;
     }
     
@@ -411,12 +411,12 @@ const formatTime = (seconds) => {
               >
                 <div 
                   className="audio-progress-fill"
-                  style={{ width: `${(currentPlaybackTime / audioDuration) * 100 || 0}%` }}
+                  style={{ width: `${(currentPlaybackTime || 0}%` }}
                 />
               </div>
               
               <div className="audio-time">
-                {formatTime(currentPlaybackTime)} / {formatTime(audioDuration)}
+                {formatTime(currentPlaybackTime)} 
               </div>
             </div>
           </div>
