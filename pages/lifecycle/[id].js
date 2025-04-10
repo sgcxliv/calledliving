@@ -468,16 +468,25 @@ export default function LifecyclePage() {
         </div>
         
         {/* Only render assignment/upload section for Week 2 */}
-        {id === '2' && (
+        {(id === '2' || id === '3') && (
           <>
             {/* Assignment Section */}
             <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '20px' }}>
-              <h2>Assignment: Photo Upload Task</h2>
-              <p>Upload a picture of you and your family which means something to you and which you'd be open to discussing with the class.</p>
+              <h2>
+               Assignment: {id === '2' && 'Photo Upload Task'}
+                          {id === '3' && 'Video Upload Task'}
+          </h2>
+              <p>
+              {id === '2' && 'Upload a picture of you and your family which means something to you and which you\'d be open to discussing with the class.'}
+              {id === '3' && 'Upload a short edited video (1–3 minutes) of your interview .'}
+              </p>
               
               <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                <p><strong>Due:</strong> Before Class on Tuesday (1:30 PM, April 8th)</p>
-                <p><strong>Submission Format:</strong> Image, with a short caption if you wish to provide some context (optional).</p>
+                <p><strong>Due:</strong> Before Class on Tuesday (1:30 PM)</p>
+                <p><strong>Submission Format:</strong>
+                {id === '2' && ' Image, with a short caption if you wish to provide some context (optional).'}
+                {id === '3' && ' Video file (MP4 or MOV preferred). You may add a short caption or description.'}
+                </p>
               </div>
             </div>
             
