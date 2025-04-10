@@ -312,17 +312,7 @@ const formatTime = (seconds) => {
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
-
-// And make sure the audio duration detection works properly:
-audio.addEventListener('loadedmetadata', () => {
-  if (audio.duration && isFinite(audio.duration)) {
-    const duration = Math.round(audio.duration);
-    setRecordingTime(duration);
-  } else {
-    setRecordingTime(0);
-  }
-});
-
+  
   const handleCaptionChange = (e) => {
     // Limit caption to 100 characters
     const text = e.target.value.slice(0, 100);
