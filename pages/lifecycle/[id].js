@@ -478,7 +478,7 @@ export default function LifecyclePage() {
           </h2>
               <p>
               {id === '2' && 'Upload a picture of you and your family which means something to you and which you\'d be open to discussing with the class.'}
-              {id === '3' && 'Upload a short edited video (1–3 minutes) of your interview .'}
+              {id === '3' && 'Pair up with another student, meet up at a convenient location, and spontaneously interview a “worker” at Stanford – one of those who keeps its life going – and record what they have to say about their lives and their work at Stanford. Edit these down to short (1-3 min) videos and upload them here before class Thursday.'}
               </p>
               
               <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
