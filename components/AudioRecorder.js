@@ -39,28 +39,15 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       setAudioBlob(null);
       setAudioUrl('');
       setIsPreviewMode(false);
+      setRecordingTime(0);
       audioChunksRef.current = [];
       
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Try to create a MediaRecorder with a widely supported format
-      let mediaRecorder;
-      const mimeTypes = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav'];
-      
-      // Find the first supported MIME type
-      for (const type of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          mediaRecorder = new MediaRecorder(stream, { mimeType: type });
-          console.log(`Using MIME type: ${type}`);
-          break;
-        }
-      }
-      
-      // Fallback if none of the preferred types are supported
-      if (!mediaRecorder) {
-        mediaRecorder = new MediaRecorder(stream);
-        console.log(`Using default MIME type: ${mediaRecorder.mimeType}`);
-      }
+      // Create a MediaRecorder with a widely supported format
+      const mediaRecorder = new MediaRecorder(stream, { 
+        mimeType: 'audio/webm' 
+      });
       
       mediaRecorderRef.current = mediaRecorder;
       
@@ -72,7 +59,7 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
 
       mediaRecorder.onstop = () => {
         const chunks = audioChunksRef.current;
-        const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+        const blob = new Blob(chunks, { type: 'audio/webm' });
         const url = URL.createObjectURL(blob);
         
         setAudioBlob(blob);
@@ -86,9 +73,15 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
         });
       };
 
+      // Start recording
       mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
       setMessage('Recording...');
+      
+      // Clear any existing timer
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
       
       // Start timer
       let seconds = 0;
@@ -96,11 +89,12 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
         seconds++;
         setRecordingTime(seconds);
         
-        // Automatically stop after 8 minutes
-        if (seconds >= 480) {
+        // Automatically stop after 5 minutes
+        if (seconds >= 300) {
           stopRecording();
         }
       }, 1000);
+      
     } catch (error) {
       console.error('Error accessing microphone:', error);
       setMessage(`Error: ${error.message || 'Could not access microphone'}`);
@@ -109,9 +103,15 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
+      // First stop the timer
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+      
+      // Then stop the recording
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      clearInterval(timerIntervalRef.current);
+      
       setIsRecording(false);
       setMessage('Recording stopped - preview your message below');
     }
@@ -142,21 +142,22 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
     setMessage('Sending message...');
     
     try {
-      // Generate unique filename with original mimetype extension
-      const mimeType = blob.type;
-      const extension = mimeType.split('/')[1] || 'webm';
+      // Generate unique filename
       const timestamp = new Date().getTime();
-      const filename = `${userId}_${timestamp}.${extension}`;
+      const filename = `${userId}_${timestamp}.webm`;
       
-      console.log(`Uploading file: ${filename} (${mimeType})`);
+      console.log(`Uploading file: ${filename} (audio/webm)`);
       
       // Convert Blob to File for better compatibility
-      const file = new File([blob], filename, { type: mimeType });
+      const file = new File([blob], filename, { type: 'audio/webm' });
       
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('audio-messages')
-        .upload(`public/${filename}`, file);
+        .upload(`public/${filename}`, file, {
+          contentType: 'audio/webm', // Explicitly set content type
+          cacheControl: '3600' // Optional: Set cache control
+        });
       
       if (error) {
         console.error('Storage upload error:', error);
@@ -185,7 +186,8 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
             receiver_id: receiverId,
             file_path: filename,
             audio_url: urlData.publicUrl,
-            caption: caption.trim() || null
+            caption: caption.trim() || null,
+            duration: recordingTime
           }
         ]);
       
@@ -231,9 +233,9 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       return;
     }
     
-    // Check file size (max 10MB - approx 8 min of audio)
+    // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setMessage('File size exceeds 10MB limit. Please keep recordings under 8 minutes.');
+      setMessage('File size exceeds 10MB limit. Please keep recordings under 5 minutes.');
       return;
     }
     
