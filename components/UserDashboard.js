@@ -45,58 +45,64 @@ export default function UserDashboard({ user }) {
   };
   
   const uploadProfilePicture = async (event) => {
-    try {
-      setUploading(true);
-      
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        setMessage('Please upload an image file');
-        return;
-      }
-      
-      // Check file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        setMessage('File size exceeds 5MB limit');
-        return;
-      }
-      
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `profile-pictures/${fileName}`;
-      
-      // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('user-content')
-        .upload(filePath, file);
-      
-      if (error) throw error;
-      
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('user-content')
-        .getPublicUrl(filePath);
-      
-      if (!urlData || !urlData.publicUrl) {
-        throw new Error('Failed to get public URL');
-      }
-      
-      // Update user profile with the new image URL
-      await updateProfile({ profile_picture_url: urlData.publicUrl });
-      
-      setProfileImage(urlData.publicUrl);
-      setMessage('Profile picture updated successfully');
-      
-    } catch (error) {
-      console.error('Error uploading profile picture:', error);
-      setMessage(`Error: ${error.message || 'Failed to upload image'}`);
-    } finally {
-      setUploading(false);
+  try {
+    setUploading(true);
+    
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setMessage('Please upload an image file');
+      return;
     }
-  };
+    
+    // Check file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('File size exceeds 5MB limit');
+      return;
+    }
+    
+    // Generate unique filename
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+    
+    // Structure the path properly - avoid using 'profile-pictures' as a folder name
+    // Use user ID as folder instead for better organization and security
+    const filePath = `${user.id}/${fileName}`;
+    
+    // Upload to the existing user-content bucket
+    const { data, error } = await supabase.storage
+      .from('user-content')  // Use your existing bucket name
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (error) throw error;
+    
+    // Get public URL from the same bucket
+    const { data: urlData } = supabase.storage
+      .from('user-content')  // Same bucket name here
+      .getPublicUrl(filePath);
+    
+    if (!urlData || !urlData.publicUrl) {
+      throw new Error('Failed to get public URL');
+    }
+    
+    // Update user profile with the new image URL
+    await updateProfile({ profile_picture_url: urlData.publicUrl });
+    
+    setProfileImage(urlData.publicUrl);
+    setMessage('Profile picture updated successfully');
+    
+  } catch (error) {
+    console.error('Error uploading profile picture:', error);
+    setMessage(`Error: ${error.message || 'Failed to upload image'}`);
+  } finally {
+    setUploading(false);
+  }
+};
   
   const updateProfile = async (updates) => {
     try {
