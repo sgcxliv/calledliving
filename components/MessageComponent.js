@@ -1,499 +1,318 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSent }) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [audioBlob, setAudioBlob] = useState(null);
-  const [audioUrl, setAudioUrl] = useState('');
-  const [caption, setCaption] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [message, setMessage] = useState('');
-  const [transcription, setTranscription] = useState('');
-  const [isTranscribing, setIsTranscribing] = useState(false);
+export default function MessageComponent({ message, currentUserId, onDelete, senderName, userProfiles }) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [showTranscription, setShowTranscription] = useState(false);
+  const [audioError, setAudioError] = useState(false);
   
-  const mediaRecorderRef = useRef(null);
-  const timerIntervalRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const audioChunksRef = useRef([]);
-
+  const audioRef = useRef(null);
+  const progressRef = useRef(null);
+  
+  const isOwnMessage = message.sender_id === currentUserId;
+  const hasAudio = Boolean(message.audio_url);
+  const hasText = Boolean(message.text_content || message.caption);
+  const hasTranscription = Boolean(message.transcription);
+  
+  // Find sender's profile to get profile picture
+  const senderProfile = userProfiles?.find(profile => profile.user_id === message.sender_id);
+  const profilePicUrl = senderProfile?.profile_picture_url || '/images/default-avatar.png';
+  
   useEffect(() => {
-    // Clean up on unmount
-    return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
-      if (mediaRecorderRef.current && isRecording) {
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      }
+    // Reset audio player state when the message changes
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setAudioError(false);
+    
+    if (hasAudio && audioRef.current) {
+      const audio = audioRef.current;
       
-      // Revoke any object URLs to prevent memory leaks
-      if (audioUrl && audioUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(audioUrl);
-      }
-    };
-  }, [isRecording, audioUrl]);
-
-  const startRecording = async () => {
-    try {
-      // Reset states
-      setAudioBlob(null);
-      setAudioUrl('');
-      setIsPreviewMode(false);
-      setRecordingTime(0); // Reset timer to 0
-      setTranscription('');
-      audioChunksRef.current = [];
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // Try to create a MediaRecorder with a widely supported format
-      let mediaRecorder;
-      const mimeTypes = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav'];
-      
-      // Find the first supported MIME type
-      for (const type of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          mediaRecorder = new MediaRecorder(stream, { mimeType: type });
-          console.log(`Using MIME type: ${type}`);
-          break;
-        }
-      }
-      
-      // Fallback if none of the preferred types are supported
-      if (!mediaRecorder) {
-        mediaRecorder = new MediaRecorder(stream);
-        console.log(`Using default MIME type: ${mediaRecorder.mimeType}`);
-      }
-      
-      mediaRecorderRef.current = mediaRecorder;
-      
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
+      // Set up audio event listeners
+      const onLoadedMetadata = () => {
+        setDuration(audio.duration);
       };
-
-      mediaRecorder.onstop = () => {
-        const chunks = audioChunksRef.current;
-        const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
-        const url = URL.createObjectURL(blob);
-        
-        setAudioBlob(blob);
-        setAudioUrl(url);
-        setIsPreviewMode(true);
-        
-        console.log('Recording completed:', {
-          format: mediaRecorder.mimeType,
-          size: `${(blob.size / 1024).toFixed(2)} KB`,
-          duration: `${recordingTime} seconds`
-        });
-        
-        // Auto-transcribe the audio
-        transcribeAudio(blob);
+      
+      const onTimeUpdate = () => {
+        setCurrentTime(audio.currentTime);
       };
-
-      // Start recording
-      mediaRecorder.start(100); // Collect data every 100ms
-      setIsRecording(true);
-      setMessage('Recording...');
       
-      // Start timer - explicitly clear any existing interval first
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
+      const onEnded = () => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+      };
       
-      let seconds = 0;
-      setRecordingTime(seconds); // Ensure we start at 0
+      const onError = (e) => {
+        console.error('Audio playback error:', e);
+        setAudioError(true);
+      };
       
-      // Create new interval to update timer
-      timerIntervalRef.current = setInterval(() => {
-        seconds++;
-        setRecordingTime(prevTime => prevTime + 1); // Use function form to ensure we're incrementing from the latest state
-        
-        // Automatically stop after 8 minutes
-        if (seconds >= 480) {
-          stopRecording();
-        }
-      }, 1000);
+      // Add event listeners
+      audio.addEventListener('loadedmetadata', onLoadedMetadata);
+      audio.addEventListener('timeupdate', onTimeUpdate);
+      audio.addEventListener('ended', onEnded);
+      audio.addEventListener('error', onError);
       
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-      setMessage(`Error: ${error.message || 'Could not access microphone'}`);
+      // Clean up event listeners on unmount
+      return () => {
+        audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+        audio.removeEventListener('timeupdate', onTimeUpdate);
+        audio.removeEventListener('ended', onEnded);
+        audio.removeEventListener('error', onError);
+      };
     }
+  }, [hasAudio, message.audio_url]);
+  
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
   };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      // First stop the timer
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
-      
-      // Then stop the recording
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      
-      setIsRecording(false);
-      setMessage('Recording stopped - preview your message below');
-    }
-  };
-
-  const transcribeAudio = async (blob) => {
-    if (!blob) return;
-    
-    setIsTranscribing(true);
-    setMessage('Transcribing audio...');
-    
+  
+  const confirmDelete = async () => {
+    setIsDeleting(true);
     try {
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append('file', blob, 'audio.webm');
-      
-      // Call your transcription API endpoint
-      const response = await fetch('/api/transcribe-audio', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Transcription service error');
-      }
-      
-      const data = await response.json();
-      setTranscription(data.text);
-      setMessage('Audio transcribed successfully');
-      
-    } catch (error) {
-      console.error('Transcription error:', error);
-      setTranscription('Transcription failed. Send anyway or try again.');
-    } finally {
-      setIsTranscribing(false);
-    }
-  };
-
-  const cancelRecording = () => {
-    stopRecording();
-    setAudioBlob(null);
-    setAudioUrl('');
-    setIsPreviewMode(false);
-    setCaption('');
-    setRecordingTime(0);
-    setMessage('');
-    setTranscription('');
-    
-    // Revoke the object URL to free up memory
-    if (audioUrl && audioUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(audioUrl);
-    }
-  };
-
-  const uploadAudio = async (blob) => {
-    if (!blob || !receiverId) {
-      setMessage('Error: Missing audio data or receiver ID');
-      return;
-    }
-    
-    setIsUploading(true);
-    setMessage('Sending message...');
-    
-    try {
-      // Generate unique filename with original mimetype extension
-      const mimeType = blob.type;
-      const extension = mimeType.split('/')[1] || 'webm';
-      const timestamp = new Date().getTime();
-      const filename = `${userId}_${timestamp}.${extension}`;
-      
-      console.log(`Uploading file: ${filename} (${mimeType})`);
-      
-      // Convert Blob to File for better compatibility
-      const file = new File([blob], filename, { type: mimeType });
-      
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('audio-messages')
-        .upload(`public/${filename}`, file, {
-          contentType: mimeType, // Explicitly set content type
-          cacheControl: '3600' // Optional: Set cache control
-        });
-      
-      if (error) {
-        console.error('Storage upload error:', error);
-        throw new Error(`Storage error: ${error.message}`);
-      }
-      
-      console.log('File uploaded successfully');
-      
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('audio-messages')
-        .getPublicUrl(`public/${filename}`);
-      
-      if (!urlData || !urlData.publicUrl) {
-        throw new Error('Failed to get public URL for uploaded file');
-      }
-      
-      console.log('Got public URL:', urlData.publicUrl);
-      
-      // Save message to database
-      const { data: message, error: msgError } = await supabase
+      const { error } = await supabase
         .from('messages')
-        .insert([
-          {
-            sender_id: userId,
-            receiver_id: receiverId,
-            file_path: filename,
-            audio_url: urlData.publicUrl,
-            caption: caption.trim() || null,
-            transcription: transcription || null,
-            duration: recordingTime
-          }
-        ]);
-      
-      if (msgError) {
-        console.error('Database error:', msgError);
-        throw new Error(`Database error: ${msgError.message}`);
-      }
-      
-      console.log('Message saved to database');
-      
-      // Clear the audio state after successful upload
-      setAudioBlob(null);
-      setAudioUrl('');
-      setIsPreviewMode(false);
-      setCaption('');
-      setRecordingTime(0);
-      setTranscription('');
-      setMessage('Message sent successfully!');
-      
-      // Revoke the object URL to free up memory
-      if (audioUrl && audioUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(audioUrl);
-      }
-      
-      // Notify parent component
-      if (onMessageSent) {
-        onMessageSent();
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setMessage(`Error: ${error.message || 'Failed to send message'}`);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    // Check if it's an audio file
-    if (!file.type.match('audio.*')) {
-      setMessage('Please upload an audio file');
-      return;
-    }
-    
-    // Check file size (max 10MB - approx 8 min of audio)
-    if (file.size > 10 * 1024 * 1024) {
-      setMessage('File size exceeds 10MB limit. Please keep recordings under 8 minutes.');
-      return;
-    }
-    
-    try {
-      // Create a blob URL for the file so we can preview it
-      const url = URL.createObjectURL(file);
-      setAudioBlob(file);
-      setAudioUrl(url);
-      setIsPreviewMode(true);
-      setMessage('Audio file loaded - preview your message below');
-      
-      // Get the duration of the audio file
-      const audio = new Audio(url);
-      audio.addEventListener('loadedmetadata', () => {
-        const duration = Math.round(audio.duration);
-        setRecordingTime(duration);
-      });
-      
-      // Transcribe the uploaded audio
-      transcribeAudio(file);
-    } catch (error) {
-      console.error('Error processing audio file:', error);
-      setMessage(`Error: ${error.message || 'Could not process audio file'}`);
-    }
-    
-    // Reset the file input
-    e.target.value = '';
-  };
-
-  const handleSendMessage = () => {
-    if (audioBlob) {
-      uploadAudio(audioBlob);
-    } else {
-      setMessage('No audio recorded or selected');
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleCaptionChange = (e) => {
-    // Limit caption to 100 characters
-    const text = e.target.value.slice(0, 100);
-    setCaption(text);
-  };
-
-  const handleTextMessageSend = async () => {
-    if (!caption.trim() || !receiverId) {
-      setMessage('Please enter a message');
-      return;
-    }
-    
-    setIsUploading(true);
-    setMessage('Sending message...');
-    
-    try {
-      // Save text message to database
-      const { data, error } = await supabase
-        .from('messages')
-        .insert([
-          {
-            sender_id: userId,
-            receiver_id: receiverId,
-            text_content: caption.trim(),
-            message_type: 'text'
-          }
-        ]);
+        .delete()
+        .eq('id', message.id);
       
       if (error) throw error;
       
-      setCaption('');
-      setMessage('Message sent successfully!');
+      // If message had an audio file, delete it from storage
+      if (message.file_path) {
+        const { error: storageError } = await supabase.storage
+          .from('audio-messages')
+          .remove([`public/${message.file_path}`]);
+        
+        if (storageError) {
+          console.error('Error deleting audio file:', storageError);
+        }
+      }
       
-      // Notify parent component
-      if (onMessageSent) {
-        onMessageSent();
+      // Call parent delete handler
+      if (onDelete) {
+        onDelete(message.id);
       }
     } catch (error) {
-      console.error('Error sending text message:', error);
-      setMessage(`Error: ${error.message || 'Failed to send message'}`);
+      console.error('Error deleting message:', error);
+      alert('Error deleting message. Please try again.');
     } finally {
-      setIsUploading(false);
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
-
-  return (
-    <div className="messaging-composer">
-      {message && (
-        <div className={`message-status ${message.includes('Error') ? 'error' : ''}`}>
-          {message}
-        </div>
-      )}
+  
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+  
+  const togglePlayback = () => {
+    const audio = audioRef.current;
+    
+    if (!audio) return;
+    
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      // Play the audio and handle any errors
+      const playPromise = audio.play();
       
-      {isPreviewMode ? (
-        // Preview mode (after recording or file selection)
-        <div className="audio-preview">
-          <audio 
-            controls 
-            src={audioUrl}
-            className="audio-player"
-          ></audio>
-          
-          {isTranscribing ? (
-            <div className="transcription-loading">Transcribing audio...</div>
-          ) : transcription ? (
-            <div className="transcription-box">
-              <h4>Transcription:</h4>
-              <p>{transcription}</p>
-            </div>
-          ) : null}
-          
-          <div className="preview-actions">
-            <input
-              type="text"
-              placeholder="Add a caption (optional, max 100 chars)"
-              value={caption}
-              onChange={handleCaptionChange}
-              maxLength={100}
-              className="caption-input"
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(error => {
+            console.error('Playback failed:', error);
+            setAudioError(true);
+          });
+      }
+    }
+  };
+  
+  const seekAudio = (e) => {
+    if (!audioRef.current || !progressRef.current) return;
+    
+    const progressBar = progressRef.current;
+    const rect = progressRef.current.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const newPosition = (offsetX / rect.width) * duration;
+    
+    audioRef.current.currentTime = newPosition;
+    setCurrentTime(newPosition);
+  };
+  
+  const formatTime = (timeInSeconds) => {
+    if (isNaN(timeInSeconds)) return "0:00";
+    
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString(undefined, { 
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+  
+  const skipForward = () => {
+    if (!audioRef.current) return;
+    
+    const newTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+  
+  const skipBackward = () => {
+    if (!audioRef.current) return;
+    
+    const newTime = Math.max(0, audioRef.current.currentTime - 10);
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+  
+  return (
+    <div className={`message-container ${isOwnMessage ? 'own-message' : 'other-message'}`}>
+      <div className="message-header">
+        <div className="sender-info">
+          <div className="profile-picture">
+            <img 
+              src={profilePicUrl} 
+              alt={isOwnMessage ? 'You' : senderName || 'User'} 
+              onError={(e) => {e.target.src = '/images/default-avatar.png'}}
             />
-            <div className="chars-count">{caption.length}/100</div>
+          </div>
+          <span className="sender-name">
+            {isOwnMessage ? 'You' : senderName || 'User'}
+          </span>
+        </div>
+        <span className="message-time">{formatTimestamp(message.created_at)}</span>
+      </div>
+      
+      <div className="message-content">
+        {hasText && (
+          <div className="text-message">
+            {message.text_content || message.caption}
+          </div>
+        )}
+        
+        {hasAudio && (
+          <div className="audio-message">
+            {/* Hidden audio element */}
+            <audio 
+              ref={audioRef}
+              src={message.audio_url}
+              preload="metadata"
+              style={{ display: 'none' }}
+            />
             
-            <div className="button-group">
-              <button
+            {audioError ? (
+              <div className="audio-error">
+                <p>Audio playback error. Please try downloading the file instead.</p>
+                <a 
+                  href={message.audio_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="download-link"
+                >
+                  Download Audio
+                </a>
+              </div>
+            ) : (
+              <div className="custom-audio-player">
+                <div className="player-controls">
+                  <button className="control-button back-button" onClick={skipBackward}>
+                    -10s
+                  </button>
+                  
+                  <button 
+                    className={`control-button play-button ${isPlaying ? 'playing' : ''}`} 
+                    onClick={togglePlayback}
+                  >
+                    {isPlaying ? '⏸️' : '▶️'}
+                  </button>
+                  
+                  <button className="control-button forward-button" onClick={skipForward}>
+                    +10s
+                  </button>
+                </div>
+                
+                <div className="progress-container">
+                  <div 
+                    className="progress-bar" 
+                    ref={progressRef}
+                    onClick={seekAudio}
+                  >
+                    <div 
+                      className="progress-fill" 
+                      style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
+                    ></div>
+                  </div>
+                  
+                  <div className="time-display">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(duration)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {hasTranscription && (
+              <div className="transcription-container">
+                <button 
+                  className="transcription-toggle"
+                  onClick={() => setShowTranscription(!showTranscription)}
+                >
+                  {showTranscription ? 'Hide' : 'Show'} Transcription
+                </button>
+                
+                {showTranscription && (
+                  <div className="transcription-text">
+                    {message.transcription}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {isOwnMessage && (
+        <div className="message-actions">
+          {showDeleteConfirm ? (
+            <div className="delete-confirmation">
+              <button 
+                className="confirm-btn"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, delete'}
+              </button>
+              <button 
                 className="cancel-btn"
-                onClick={cancelRecording}
-                disabled={isUploading}
+                onClick={cancelDelete}
+                disabled={isDeleting}
               >
                 Cancel
               </button>
-              
-              <button
-                className="send-btn"
-                onClick={handleSendMessage}
-                disabled={isUploading}
-              >
-                {isUploading ? 'Sending...' : 'Send Audio'}
-              </button>
             </div>
-          </div>
-        </div>
-      ) : (
-        // Recording/Upload mode
-        <div className="audio-controls">
-          <div className="control-buttons">
+          ) : (
             <button
-              className={`record-btn ${isRecording ? 'recording' : ''}`}
-              onClick={isRecording ? stopRecording : startRecording}
-              disabled={isUploading}
+              className="delete-btn"
+              onClick={handleDeleteClick}
             >
-              <i className="record-icon">{isRecording ? '⏹️' : '🎤'}</i>
-              <span>{isRecording ? 'Stop' : 'Record'}</span>
-              {isRecording && <span className="recording-time">{formatTime(recordingTime)}</span>}
+              Delete
             </button>
-            
-            <div className="upload-container">
-              <button
-                className="upload-btn"
-                onClick={() => fileInputRef.current.click()}
-                disabled={isRecording || isUploading}
-              >
-                <i className="upload-icon">📎</i>
-                <span>Upload</span>
-              </button>
-              
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="audio/*"
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-              />
-            </div>
-          </div>
-          
-          <div className="text-message-controls">
-            <input
-              type="text"
-              placeholder="Send a text message (max 100 chars)"
-              value={caption}
-              onChange={handleCaptionChange}
-              maxLength={100}
-              className="text-message-input"
-              disabled={isRecording || isUploading}
-            />
-            <span className="chars-count">{caption.length}/100</span>
-            <button
-              className="text-send-btn"
-              onClick={handleTextMessageSend}
-              disabled={!caption.trim() || isRecording || isUploading}
-            >
-              Send
-            </button>
-          </div>
+          )}
         </div>
       )}
     </div>
