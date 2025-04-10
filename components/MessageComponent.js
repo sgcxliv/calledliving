@@ -4,7 +4,12 @@ import { supabase } from '../lib/supabaseClient';
 export default function MessageComponent({ message, currentUserId, onDelete, senderName }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  
   const audioRef = useRef(null);
+  const progressBarRef = useRef(null);
   
   const isOwnMessage = message.sender_id === currentUserId;
   const hasAudio = Boolean(message.audio_url);
@@ -20,8 +25,12 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
       audioRef.current.addEventListener('error', (e) => {
         console.error('Audio playback error:', e);
       });
-    }
-  }, [hasAudio, message.audio_url]);
+      
+      const audio = audioRef.current;
+      
+      const handleTimeUpdate = () => {
+        setCurrentTime(audio.currentTime);
+      };
       
       const handleLoadedMetadata = () => {
         setDuration(audio.duration);
@@ -56,7 +65,7 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
         audio.removeEventListener('ended', handleEnded);
       };
     }
-  }, [hasAudio]);
+  }, [hasAudio, message.audio_url]);
   
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
@@ -167,48 +176,19 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
       
       <div className="message-bubble">
         {hasAudio && (
-          <div className="message-audio-player">
-            {/* Hidden audio element for browser API */}
+          <div className="audio-message">
             <audio 
               ref={audioRef}
+              controls 
               src={message.audio_url} 
+              className="audio-player"
               preload="metadata"
-              style={{ display: 'none' }}
-            />
-            
-            {/* Custom integrated player UI */}
-            <div className="audio-player-controls">
-              <button 
-                className="player-control-btn play-btn"
-                onClick={togglePlayback}
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-              >
-                {isPlaying ? '⏸️' : '▶️'}
-              </button>
-              
-              <div 
-                className="player-progress-bar" 
-                ref={progressBarRef}
-                onClick={handleProgressBarClick}
-              >
-                <div 
-                  className="player-progress-fill"
-                  style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
-                />
-              </div>
-              
-              <div className="player-time">
-                {formatTime(currentTime)}
-              </div>
-              
-              <button 
-                className="player-control-btn download-btn"
-                onClick={downloadAudio}
-                aria-label="Download"
-              >
-                ⬇️
-              </button>
-            </div>
+            >
+              <source src={message.audio_url} type="audio/mpeg" />
+              <source src={message.audio_url} type="audio/webm" />
+              <source src={message.audio_url} type="audio/wav" />
+              Your browser does not support the audio element.
+            </audio>
           </div>
         )}
         
@@ -217,23 +197,6 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
             {message.text_content || message.caption}
           </div>
         )}
-
-        {hasAudio && (
-        <div className="audio-message">
-          <audio 
-            ref={audioRef}
-            controls 
-            src={message.audio_url} 
-            className="audio-player"
-            preload="metadata"
-          >
-            <source src={message.audio_url} type="audio/mpeg" />
-            <source src={message.audio_url} type="audio/webm" />
-            <source src={message.audio_url} type="audio/wav" />
-            Your browser does not support the audio element.
-          </audio>
-        </div>
-      )}
         
         <div className="message-timestamp">
           {formatTimestamp(message.created_at)}
