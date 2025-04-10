@@ -2,41 +2,60 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import AudioRecorder from './AudioRecorder';
 import MessageComponent from './MessageComponent';
+import UserDashboard from './UserDashboard';
 
 export default function StudentView({ user }) {
+  const [activeTab, setActiveTab] = useState('messages');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [professor, setProfessor] = useState(null);
+  const [userProfiles, setUserProfiles] = useState([]);
 
   useEffect(() => {
-    const fetchProfessorAndMessages = async () => {
-      setLoading(true);
-      try {
-        // Find professor
-        const { data: professors, error: profError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('role', 'professor')
-          .limit(1);
-        
-        if (profError) throw profError;
-        if (professors && professors.length > 0) {
-          setProfessor(professors[0]);
-        }
+    if (user) {
+      fetchProfessorAndMessages();
+      fetchUserProfiles();
+    }
+  }, [user]);
+
+  const fetchUserProfiles = async () => {
+    try {
+      // Fetch all user profiles to get profile pictures
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('user_id, profile_picture_url');
+      
+      if (error) throw error;
+      
+      setUserProfiles(data || []);
+    } catch (error) {
+      console.error('Error fetching user profiles:', error);
+    }
+  };
+
+  const fetchProfessorAndMessages = async () => {
+    setLoading(true);
+    try {
+      // Find professor
+      const { data: professors, error: profError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'professor')
+        .limit(1);
+      
+      if (profError) throw profError;
+      if (professors && professors.length > 0) {
+        setProfessor(professors[0]);
         
         // Get messages between student and professor
         await loadMessages(professors[0]?.id);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-    
-    if (user) {
-      fetchProfessorAndMessages();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
+  };
 
   const loadMessages = async (professorId) => {
     if (!professorId || !user) return;
@@ -68,41 +87,77 @@ export default function StudentView({ user }) {
     }
   };
 
-  if (loading) return <div className="loading-container">Loading conversations...</div>;
+  const handleMessageSent = () => {
+    // Reload messages after sending
+    if (professor) {
+      loadMessages(professor.id);
+    }
+    
+    // Also refresh user profiles to get any updated profile pictures
+    fetchUserProfiles();
+  };
+
+  if (loading && activeTab === 'messages') {
+    return <div className="loading-container">Loading conversations...</div>;
+  }
 
   return (
     <div>
-      <div className="messaging-container">
-        <div className="messaging-header">
-          <h3>Audio Messages with Professor {professor?.name || 'Abbasi'}</h3>
-        </div>
-        
-        <div className="messaging-body">
-          {messages.length === 0 ? (
-            <div className="empty-messages">
-              <div className="empty-icon">💬</div>
-              <p>No messages yet. Start the conversation!</p>
-              <p>Record an audio message or send a text message below.</p>
-            </div>
-          ) : (
-            messages.map(message => (
-              <MessageComponent
-                key={message.id}
-                message={message}
-                currentUserId={user.id}
-                onDelete={handleDeleteMessage}
-                senderName={message.sender_id === user.id ? 'You' : `Professor ${professor?.name || 'Abbasi'}`}
-              />
-            ))
-          )}
-        </div>
-        
-        <AudioRecorder
-          userId={user.id}
-          receiverId={professor?.id}
-          onMessageSent={() => loadMessages(professor?.id)}
-        />
+      <div className="student-tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`}
+          onClick={() => setActiveTab('messages')}
+        >
+          Messages
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          My Profile
+        </button>
       </div>
+      
+      {activeTab === 'messages' && (
+        <div className="messaging-container">
+          <div className="messaging-header">
+            <h3>Messages with Professor {professor?.name || 'Abbasi'}</h3>
+          </div>
+          
+          <div className="messaging-body">
+            {messages.length === 0 ? (
+              <div className="empty-messages">
+                <div className="empty-icon">💬</div>
+                <p>No messages yet. Start the conversation!</p>
+                <p>Record an audio message or send a text message below.</p>
+              </div>
+            ) : (
+              messages.map(message => (
+                <MessageComponent
+                  key={message.id}
+                  message={message}
+                  currentUserId={user.id}
+                  onDelete={handleDeleteMessage}
+                  senderName={message.sender_id === user.id ? 'You' : `Professor ${professor?.name || 'Abbasi'}`}
+                  userProfiles={userProfiles}
+                />
+              ))
+            )}
+          </div>
+          
+          <AudioRecorder
+            userId={user.id}
+            receiverId={professor?.id}
+            onMessageSent={handleMessageSent}
+          />
+        </div>
+      )}
+      
+      {activeTab === 'profile' && (
+        <div className="profile-container">
+          <UserDashboard user={user} />
+        </div>
+      )}
     </div>
   );
 }
