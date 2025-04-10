@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import AudioRecorder from './AudioRecorder';
+import AudioUploader from './AudioUploader';
 import MessageComponent from './MessageComponent';
 import UserDashboard from './UserDashboard';
 
@@ -63,8 +63,6 @@ export default function StudentView({ user }) {
     try {
       // Remove from local state immediately for better UX
       setMessages(messages.filter(m => m.id !== messageId));
-      
-      // MessageComponent now handles the actual deletion logic
     } catch (error) {
       console.error('Error handling message deletion:', error);
     }
@@ -98,6 +96,9 @@ export default function StudentView({ user }) {
         <div className="messaging-container">
           <div className="messaging-header">
             <h3>Messages with Professor {professor?.name || 'Abbasi'}</h3>
+            <p className="messaging-instructions">
+              Upload audio files to send voice messages or use text chat.
+            </p>
           </div>
           
           <div className="messaging-body">
@@ -107,7 +108,7 @@ export default function StudentView({ user }) {
               <div className="empty-messages">
                 <div className="empty-icon">💬</div>
                 <p>No messages yet. Start the conversation!</p>
-                <p>Record an audio message or send a text message below.</p>
+                <p>Upload an audio file or send a text message below.</p>
               </div>
             ) : (
               messages.map(message => (
@@ -122,7 +123,7 @@ export default function StudentView({ user }) {
             )}
           </div>
           
-          <AudioRecorder
+          <AudioUploader
             userId={user.id}
             receiverId={professor?.id}
             onMessageSent={handleMessageSent}
