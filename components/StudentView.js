@@ -97,7 +97,7 @@ export default function StudentView({ user }) {
           <div className="messaging-header">
             <h3>Messages with Professor {professor?.name || 'Abbasi'}</h3>
             <p className="messaging-instructions">
-              Upload audio files to send voice messages or use text chat.
+              Please name your files Week_X_Reflection_FirstName_LastName.
             </p>
           </div>
           
