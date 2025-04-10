@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabaseClient';
 
 export default function AudioUploader({ userId, receiverId, onMessageSent }) {
   const [file, setFile] = useState(null);
-  const [caption, setCaption] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState('');
   
@@ -26,13 +25,15 @@ export default function AudioUploader({ userId, receiverId, onMessageSent }) {
     }
     
     setFile(selectedFile);
-    setMessage(`Selected file: ${selectedFile.name}`);
+    // Don't set message here to avoid displaying filename twice
   };
   
-  const handleCaptionChange = (e) => {
-    // Limit caption to 100 characters
-    const text = e.target.value.slice(0, 100);
-    setCaption(text);
+  const clearFile = () => {
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setMessage('');
   };
   
   const uploadAudio = async () => {
@@ -63,7 +64,7 @@ export default function AudioUploader({ userId, receiverId, onMessageSent }) {
         throw uploadError;
       }
       
-      // Get public URL
+      // Use your existing URL method
       const { data: urlData } = supabase.storage
         .from('audio-messages')
         .getPublicUrl(filePath);
@@ -82,7 +83,6 @@ export default function AudioUploader({ userId, receiverId, onMessageSent }) {
             file_path: filePath,
             audio_url: urlData.publicUrl,
             message_type: 'audio',
-            caption: caption,
             file_type: file.type,
             file_name: file.name
           }
@@ -93,9 +93,8 @@ export default function AudioUploader({ userId, receiverId, onMessageSent }) {
       }
       
       // Success!
-      setMessage('Audio message uploaded successfully!');
+      setMessage('Audio message sent successfully!');
       setFile(null);
-      setCaption('');
       
       // Reset the file input
       if (fileInputRef.current) {
@@ -113,45 +112,6 @@ export default function AudioUploader({ userId, receiverId, onMessageSent }) {
       setIsUploading(false);
     }
   };
-  
-  const handleTextMessageSend = async () => {
-    if (!caption.trim() || !receiverId) {
-      setMessage('Please enter a message');
-      return;
-    }
-    
-    setIsUploading(true);
-    setMessage('Sending message...');
-    
-    try {
-      // Save text message to database
-      const { error } = await supabase
-        .from('messages')
-        .insert([
-          {
-            sender_id: userId,
-            receiver_id: receiverId,
-            text_content: caption.trim(),
-            message_type: 'text'
-          }
-        ]);
-      
-      if (error) throw error;
-      
-      setCaption('');
-      setMessage('Message sent successfully!');
-      
-      // Notify parent component
-      if (onMessageSent) {
-        onMessageSent();
-      }
-    } catch (error) {
-      console.error('Error sending text message:', error);
-      setMessage(`Error: ${error.message || 'Failed to send message'}`);
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   return (
     <div className="messaging-composer">
@@ -161,55 +121,55 @@ export default function AudioUploader({ userId, receiverId, onMessageSent }) {
         </div>
       )}
       
-      <div className="file-upload-area">
-        <button 
-          className="upload-btn"
-          onClick={() => fileInputRef.current.click()}
-          disabled={isUploading}
-        >
-          Select Audio File
-        </button>
-        
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept="audio/*"
-          style={{ display: 'none' }}
-        />
-        
-        {file && (
-          <div className="selected-file">
-            <span>{file.name}</span>
+      <div className="audio-upload-container">
+        {file ? (
+          // Show selected file in blue at the top
+          <div className="selected-file-header">
+            <div className="selected-file-name">
+              Selected file: {file.name}
+            </div>
             <button 
-              className="send-audio-btn"
+              className="remove-file-btn"
+              onClick={clearFile}
+              disabled={isUploading}
+              title="Remove file"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <div className="upload-instruction">
+            Upload audio files to send voice messages
+          </div>
+        )}
+        
+        <div className="audio-controls">
+          <button 
+            className="select-audio-btn"
+            onClick={() => fileInputRef.current.click()}
+            disabled={isUploading}
+          >
+            Select Audio File
+          </button>
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="audio/*"
+            style={{ display: 'none' }}
+          />
+          
+          {file && (
+            <button 
+              className="send-btn"
               onClick={uploadAudio}
               disabled={isUploading}
             >
-              {isUploading ? 'Uploading...' : 'Send Audio'}
+              {isUploading ? 'Sending...' : 'Send'}
             </button>
-          </div>
-        )}
-      </div>
-      
-      <div className="text-message-controls">
-        <input
-          type="text"
-          placeholder="Send a text message (max 100 chars)"
-          value={caption}
-          onChange={handleCaptionChange}
-          maxLength={100}
-          className="text-message-input"
-          disabled={isUploading}
-        />
-        <span className="chars-count">{caption.length}/100</span>
-        <button
-          className="text-send-btn"
-          onClick={handleTextMessageSend}
-          disabled={!caption.trim() || isUploading}
-        >
-          Send
-        </button>
+          )}
+        </div>
       </div>
     </div>
   );
