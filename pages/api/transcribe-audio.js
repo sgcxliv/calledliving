@@ -1,9 +1,8 @@
 import { supabase } from '../../lib/supabaseClient';
 import formidable from 'formidable';
 import fs from 'fs';
-import fetch from 'node-fetch';
 
-// Configure formidable to handle file uploads
+// Configure Next.js to handle file uploads
 export const config = {
   api: {
     bodyParser: false,
@@ -26,14 +25,14 @@ export default async function handler(req, res) {
     // Parse the incoming form data with formidable
     const form = new formidable.IncomingForm();
     
-    const { fields, files } = await new Promise((resolve, reject) => {
+    const parsedForm = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) reject(err);
         resolve({ fields, files });
       });
     });
     
-    const file = files.file;
+    const file = parsedForm.files.file;
     if (!file) {
       return res.status(400).json({ error: 'No audio file provided' });
     }
@@ -41,50 +40,49 @@ export default async function handler(req, res) {
     // Read the file
     const fileData = fs.readFileSync(file.filepath);
     
-    // Here you would use a transcription service API like Whisper API or another service
-    // For this example, I'll show a placeholder for how you'd use OpenAI Whisper API
-    // You'll need to fill in the actual API endpoint and key for the service you choose
+    // For now, we'll use a placeholder transcription while you decide on a transcription service
+    // This way your UI will work, but you'll need to replace this with a real transcription later
     
-    // Option 1: Using OpenAI Whisper API (requires API key)
-    // const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-    //   },
-    //   body: createFormData('file', fileData, file.originalFilename)
-    // });
+    const transcriptionText = "This is a temporary placeholder transcription. Replace with a real transcription service when ready.";
     
-    // Option 2: Using AssemblyAI (requires API key)
-    // const response = await fetch('https://api.assemblyai.com/v2/transcript', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `${process.env.ASSEMBLY_AI_KEY}`,
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({ audio_url: uploadedAudioUrl })
-    // });
-    
-    // Temporary placeholder for demo/development
-    // In a real app, replace this with actual API call to transcription service
-    const transcriptionText = "This is a placeholder transcription. Replace with actual transcription service.";
-    
-    // Delete the temporary file
+    // Clean up the temporary file
     fs.unlinkSync(file.filepath);
     
     return res.status(200).json({ 
       success: true, 
       text: transcriptionText
     });
+    
+    /* 
+    // Uncomment this section when you're ready to implement a real transcription service
+    
+    // Option 1: Using Web Speech API from browser and sending results to server
+    // This is the simplest but requires browser transcription
+    
+    // Option 2: Using a transcription service API
+    // Install necessary packages first: npm install openai
+    
+    import { Configuration, OpenAIApi } from 'openai';
+    
+    const configuration = new Configuration({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    const openai = new OpenAIApi(configuration);
+    
+    const response = await openai.createTranscription(
+      fs.createReadStream(file.filepath),
+      "whisper-1",
+      undefined,
+      'text',
+      1.0,
+      'en'
+    );
+    
+    const transcriptionText = response.data;
+    */
+    
   } catch (error) {
     console.error('Error processing audio:', error);
     return res.status(500).json({ error: 'Error processing audio file' });
   }
-}
-
-// Helper function to create FormData for API requests
-function createFormData(fieldName, fileData, filename) {
-  const formData = new FormData();
-  const blob = new Blob([fileData]);
-  formData.append(fieldName, blob, filename);
-  return formData;
 }
