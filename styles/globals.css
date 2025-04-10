@@ -1873,3 +1873,57 @@ audio {
     margin-left: auto;
   }
 }
+/* Fix for the "Enter your name" input field width */
+.form-control {
+  width: 100%;
+  max-width: 400px; /* Limit maximum width */
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  margin-top: 5px;
+}
+
+/* Make the Save Profile button match the input width */
+.save-profile-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  background-color: #0084ff;
+  color: white;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  max-width: 400px; /* Match the input field width */
+  width: 100%;
+}
+
+/* Fix the text message input field to be wider */
+.text-message-input {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  outline: none;
+  min-width: 250px; /* Ensure minimum width */
+}
+
+/* Adjust message container to better display the send button */
+.text-message-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  width: 100%;
+}
+
+/* Move the character count to not overlap with input text */
+.chars-count {
+  position: absolute;
+  right: 80px;
+  bottom: 8px; /* Position at bottom of input */
+  color: #999;
+  font-size: 0.8rem;
+}
