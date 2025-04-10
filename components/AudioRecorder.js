@@ -10,28 +10,65 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
   const [isUploading, setIsUploading] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [message, setMessage] = useState('');
+  const [currentPlaybackTime, setCurrentPlaybackTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   
   const mediaRecorderRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const fileInputRef = useRef(null);
   const audioChunksRef = useRef([]);
-
+  const audioPlayerRef = useRef(null);
+  
+  // Cleanup on component unmount
   useEffect(() => {
-    // Clean up on unmount
     return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
-      if (mediaRecorderRef.current && isRecording) {
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      }
-      
-      // Revoke any object URLs to prevent memory leaks
-      if (audioUrl && audioUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(audioUrl);
-      }
+      stopTimerAndRecording();
+      releaseAudioResources();
     };
-  }, [isRecording, audioUrl]);
+  }, []);
+  
+  // Set up audio player event listeners for preview
+  useEffect(() => {
+    if (isPreviewMode && audioPlayerRef.current) {
+      const audioEl = audioPlayerRef.current;
+      
+      const handleTimeUpdate = () => {
+        setCurrentPlaybackTime(audioEl.currentTime);
+      };
+      
+      const handleLoadedMetadata = () => {
+        setAudioDuration(audioEl.duration);
+      };
+      
+      audioEl.addEventListener('timeupdate', handleTimeUpdate);
+      audioEl.addEventListener('loadedmetadata', handleLoadedMetadata);
+      
+      return () => {
+        audioEl.removeEventListener('timeupdate', handleTimeUpdate);
+        audioEl.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      };
+    }
+  }, [isPreviewMode, audioUrl]);
+  
+  const stopTimerAndRecording = () => {
+    // Stop the timer
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    
+    // Stop the recorder if active
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+  };
+  
+  const releaseAudioResources = () => {
+    // Revoke object URLs to prevent memory leaks
+    if (audioUrl && audioUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(audioUrl);
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -44,9 +81,9 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Create a MediaRecorder with a widely supported format
-      const mediaRecorder = new MediaRecorder(stream, { 
-        mimeType: 'audio/webm' 
+      // Create MediaRecorder with widely supported format
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm'
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -78,19 +115,18 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       setIsRecording(true);
       setMessage('Recording...');
       
-      // Clear any existing timer
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
+      // First, make sure to clear any existing timer
+      stopTimerAndRecording();
       
-      // Start timer
-      let seconds = 0;
+      // Start a new timer with a separate variable to avoid closure issues
+      let elapsedSeconds = 0;
       timerIntervalRef.current = setInterval(() => {
-        seconds++;
-        setRecordingTime(seconds);
+        elapsedSeconds += 1;
+        setRecordingTime(elapsedSeconds);
+        console.log("Timer tick:", elapsedSeconds); // Debug logging
         
-        // Automatically stop after 5 minutes
-        if (seconds >= 300) {
+        // Auto-stop after 5 minutes to avoid very large files
+        if (elapsedSeconds >= 300) {
           stopRecording();
         }
       }, 1000);
@@ -106,11 +142,16 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       // First stop the timer
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
       }
       
       // Then stop the recording
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      try {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      } catch (err) {
+        console.error("Error stopping media recorder:", err);
+      }
       
       setIsRecording(false);
       setMessage('Recording stopped - preview your message below');
@@ -126,10 +167,7 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
     setRecordingTime(0);
     setMessage('');
     
-    // Revoke the object URL to free up memory
-    if (audioUrl && audioUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(audioUrl);
-    }
+    releaseAudioResources();
   };
 
   const uploadAudio = async (blob) => {
@@ -155,8 +193,8 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       const { data, error } = await supabase.storage
         .from('audio-messages')
         .upload(`public/${filename}`, file, {
-          contentType: 'audio/webm', // Explicitly set content type
-          cacheControl: '3600' // Optional: Set cache control
+          contentType: 'audio/webm',
+          cacheControl: '3600'
         });
       
       if (error) {
@@ -206,10 +244,7 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       setRecordingTime(0);
       setMessage('Message sent successfully!');
       
-      // Revoke the object URL to free up memory
-      if (audioUrl && audioUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(audioUrl);
-      }
+      releaseAudioResources();
       
       // Notify parent component
       if (onMessageSent) {
@@ -252,6 +287,7 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       audio.addEventListener('loadedmetadata', () => {
         const duration = Math.round(audio.duration);
         setRecordingTime(duration);
+        setAudioDuration(duration);
       });
     } catch (error) {
       console.error('Error processing audio file:', error);
@@ -272,7 +308,7 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -320,6 +356,18 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       setIsUploading(false);
     }
   };
+  
+  // Handle progress bar click in preview
+  const handleProgressBarClick = (e) => {
+    if (!audioPlayerRef.current || !audioDuration) return;
+    
+    const progressBar = e.currentTarget;
+    const rect = progressBar.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const clickPositionRatio = offsetX / rect.width;
+    
+    audioPlayerRef.current.currentTime = clickPositionRatio * audioDuration;
+  };
 
   return (
     <div className="messaging-composer">
@@ -332,11 +380,45 @@ export default function ImprovedAudioRecorder({ userId, receiverId, onMessageSen
       {isPreviewMode ? (
         // Preview mode (after recording or file selection)
         <div className="audio-preview">
-          <audio 
-            controls 
-            src={audioUrl}
-            className="audio-player"
-          ></audio>
+          <div className="custom-audio-player">
+            <audio 
+              ref={audioPlayerRef}
+              src={audioUrl}
+              controls={false}
+              preload="metadata"
+              style={{ display: 'none' }}
+            />
+            
+            <div className="audio-controls">
+              <button 
+                className="audio-control-button"
+                onClick={() => {
+                  const audio = audioPlayerRef.current;
+                  if (audio.paused) {
+                    audio.play();
+                  } else {
+                    audio.pause();
+                  }
+                }}
+              >
+                {audioPlayerRef.current?.paused !== false ? '▶️' : '⏸️'}
+              </button>
+              
+              <div 
+                className="audio-progress-bar" 
+                onClick={handleProgressBarClick}
+              >
+                <div 
+                  className="audio-progress-fill"
+                  style={{ width: `${(currentPlaybackTime / audioDuration) * 100 || 0}%` }}
+                />
+              </div>
+              
+              <div className="audio-time">
+                {formatTime(currentPlaybackTime)} / {formatTime(audioDuration)}
+              </div>
+            </div>
+          </div>
           
           <div className="preview-actions">
             <input
