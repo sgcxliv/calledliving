@@ -1722,3 +1722,46 @@ audio {
   background-color: #ffebee;
   color: #d32f2f;
 }
+/* Message Audio Player Styles */
+.message-audio-player {
+  margin: 8px 0;
+  width: 100%;
+}
+
+.audio-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 6px 10px;
+}
+
+.own-message .audio-player-controls {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.player-control-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.player-control-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.own-message .player-control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.player-
