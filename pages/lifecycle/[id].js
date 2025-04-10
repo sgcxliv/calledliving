@@ -31,7 +31,7 @@ export default function LifecyclePage() {
   const backgroundImages = {
     '1': '/images/weekone-background.jpg',
     '2': '/images/weektwo-background.jpg',
-    '4': '/images/weektwo-background.jpg',
+    '3': '/images/weektwo-background.jpg',
   };
   
   const themeContent = {
@@ -54,7 +54,7 @@ export default function LifecyclePage() {
         'What is Play? What function does it have in life?',
         'Do Adults Play? Why is there an emphasis on Play for Children, but not for Adults?',
       ]
-    }
+    },
     '3': {
       title: 'Mere Life, or, The Real World',
       description: 'What does it mean to make a living, in the real world?',
