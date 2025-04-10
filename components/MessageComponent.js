@@ -51,17 +51,33 @@ export default function MessageComponent({ message, currentUserId, onDelete, sen
     setShowDeleteConfirm(false);
   };
   
-  const downloadAudio = () => {
-    if (!message.audio_url) return;
+  const downloadAudio = async () => {
+  if (!message.file_path) return;
+  
+  try {
+    // Generate a proper download URL using the file path
+    const { data, error } = await supabase.storage
+      .from('audio-messages')  // This is your bucket name - correct
+      .createSignedUrl(message.file_path, 60); // Valid for 60 seconds
     
-    // Create temporary link element
+    if (error) {
+      console.error('Error generating download URL:', error);
+      alert('Unable to download file: ' + error.message);
+      return;
+    }
+    
+    // Create temporary link element with the valid signed URL
     const a = document.createElement('a');
-    a.href = message.audio_url;
-    a.download = message.file_path ? message.file_path.split('/').pop() : 'audio-message.mp3';
+    a.href = data.signedUrl;
+    a.download = message.file_path.split('/').pop() || 'audio-message.mp3';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
+  } catch (err) {
+    console.error('Download error:', err);
+    alert('Error downloading file');
+  }
+};
   
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
