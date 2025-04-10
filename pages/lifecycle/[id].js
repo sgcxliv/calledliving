@@ -31,7 +31,7 @@ export default function LifecyclePage() {
   const backgroundImages = {
     '1': '/images/weekone-background.jpg',
     '2': '/images/weektwo-background.jpg',
-    '3': '/images/weektwo-background.jpg',
+    '3': '/images/weekthree-background.jpg',
   };
   
   const themeContent = {
