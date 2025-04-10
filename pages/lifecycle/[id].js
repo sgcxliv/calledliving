@@ -24,12 +24,14 @@ export default function LifecyclePage() {
   const titles = {
     '1': 'What is Called Living?',
     '2': 'Childhood, or the No-place',
+    '3': 'Mere Life, or, The Real World',
     // Other titles can be added here
   };
 
   const backgroundImages = {
     '1': '/images/weekone-background.jpg',
     '2': '/images/weektwo-background.jpg',
+    '4': '/images/weektwo-background.jpg',
   };
   
   const themeContent = {
@@ -53,11 +55,24 @@ export default function LifecyclePage() {
         'Do Adults Play? Why is there an emphasis on Play for Children, but not for Adults?',
       ]
     }
+    '3': {
+      title: 'Mere Life, or, The Real World',
+      description: 'What does it mean to make a living, in the real world?',
+      questions: [
+        'What is work? What is Life?',
+        'Does Work-Life balance truly exist?',
+        'Is work a natural part of life?',
+        'What is "Real Life?"',
+        'What is "Mere Life?"',
+      ]
+    }
   };
 
   const reflectionPrompts = {
     '1': 'No prompt this week. Reflections Start Week 2!',
     '2': 'Prompt: What is called "Childhood"?',
+    '2': 'To Be Released...',
+
   };
 
   const requiredReadings = {
@@ -75,6 +90,16 @@ export default function LifecyclePage() {
       {
         title: 'Huizinga, Johan. "Nature and Significance of Play as a Cultural Phenomenon"',
         path: '/readings/huizinga.pdf'
+      }
+    ]
+    '3': [
+      {
+        title: 'Melville, Herman. "Bartleby, The Scrivener"',
+        path: '/readings/bartleby.pdf'
+      },
+      {
+        title: 'Wenders, Wim. "Movie: Perfect Days(2023)"',
+        path: 'https://archive.org/details/perfect.-days.-2023.-webrip.-1080p.x-265.10bit.-psa.-dream'
       }
     ]
   };
