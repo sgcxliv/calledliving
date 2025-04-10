@@ -71,7 +71,7 @@ export default function LifecyclePage() {
   const reflectionPrompts = {
     '1': 'No prompt this week. Reflections Start Week 2!',
     '2': 'Prompt: What is called "Childhood"?',
-    '2': 'To Be Released...',
+    '3': 'To Be Released...',
 
   };
 
