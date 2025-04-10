@@ -158,7 +158,7 @@ export default function LifecyclePage() {
 
   // Fetch submissions when the page loads
   useEffect(() => {
-    if (id === '2') {
+    if (id === '2' || id === '3') {
       fetchSubmissions();
     }
   }, [id]);
