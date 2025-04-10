@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabase.storage
       .from('audio-messages')
       .upload(`${user.id}/${filename}`, fileBuffer, {
-        contentType: 'audio/mpeg', // Correct MIME type for MP3
+        contentType: 'audio/webm', // Correct MIME type for MP3
         cacheControl: '3600'
       });
     
