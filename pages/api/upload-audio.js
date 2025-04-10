@@ -1,3 +1,4 @@
+// pages/api/upload-audio.js
 import { supabase } from '../../lib/supabaseClient';
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
@@ -35,6 +36,7 @@ export default async function handler(req, res) {
     
     const audioFile = files.file;
     const receiverId = fields.receiverId?.[0] || fields.receiverId;
+    const caption = fields.caption?.[0] || fields.caption || '';
     
     if (!audioFile || !receiverId) {
       return res.status(400).json({ error: 'Missing audio file or receiver ID' });
@@ -43,14 +45,24 @@ export default async function handler(req, res) {
     // Read the file
     const fileBuffer = await readFile(audioFile.filepath);
     
-    // Generate unique filename
-    const filename = `${user.id}_${Date.now()}.mp3`;
+    // Get file extension
+    const fileExt = audioFile.originalFilename.split('.').pop() || 'mp3';
     
-    // Upload to Supabase Storage with correct content type
+    // Generate unique filename
+    const filename = `${user.id}_${Date.now()}.${fileExt}`;
+    const filePath = `${user.id}/${filename}`;
+    
+    // Determine content type based on extension
+    let contentType = 'audio/mpeg'; // Default
+    if (fileExt === 'wav') contentType = 'audio/wav';
+    if (fileExt === 'ogg') contentType = 'audio/ogg';
+    if (fileExt === 'webm') contentType = 'audio/webm';
+    
+    // Upload to Supabase Storage
     const { data, error } = await supabase.storage
       .from('audio-messages')
-      .upload(`${user.id}/${filename}`, fileBuffer, {
-        contentType: 'audio/webm', // Correct MIME type for MP3
+      .upload(filePath, fileBuffer, {
+        contentType: contentType,
         cacheControl: '3600'
       });
     
@@ -62,7 +74,7 @@ export default async function handler(req, res) {
     // Get public URL
     const { data: urlData } = supabase.storage
       .from('audio-messages')
-      .getPublicUrl(`${user.id}/${filename}`);
+      .getPublicUrl(filePath);
     
     if (!urlData || !urlData.publicUrl) {
       return res.status(400).json({ error: 'Failed to get public URL' });
@@ -75,9 +87,12 @@ export default async function handler(req, res) {
         {
           sender_id: user.id,
           receiver_id: receiverId,
-          file_path: `${user.id}/${filename}`,
+          file_path: filePath,
           audio_url: urlData.publicUrl,
-          message_type: 'audio'
+          message_type: 'audio',
+          caption: caption,
+          file_type: contentType,
+          file_name: audioFile.originalFilename
         }
       ]);
     
