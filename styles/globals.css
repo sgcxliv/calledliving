@@ -1764,5 +1764,111 @@ audio {
   background-color: rgba(255, 255, 255, 0.25);
 }
 
-.player-
+/* Message Audio Player Styles */
+.message-audio-player {
+  margin: 8px 0;
+  width: 100%;
+}
+
+.audio-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 6px 10px;
+}
+
+.own-message .audio-player-controls {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.player-control-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.player-control-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.own-message .player-control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.player-progress-bar {
+  flex-grow: 1;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.own-message .player-progress-bar {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.player-progress-fill {
+  height: 100%;
+  background-color: #0084ff;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 2px;
+}
+
+.own-message .player-progress-fill {
+  background-color: #ffffff;
+}
+
+.player-time {
+  font-size: 0.75rem;
+  color: #666;
+  min-width: 40px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.own-message .player-time {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.download-btn {
+  font-size: 0.85rem;
+}
+
+.message-text {
+  margin-top: 8px;
+  word-break: break-word;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .audio-player-controls {
+    flex-wrap: wrap;
+  }
+  
+  .player-progress-bar {
+    order: 1;
+    width: 100%;
+    margin-top: 4px;
+  }
+  
+  .player-time {
+    order: 2;
+    text-align: right;
+    margin-left: auto;
+  }
 }
