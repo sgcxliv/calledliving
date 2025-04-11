@@ -424,6 +424,7 @@ button {
   display: flex;
   flex-direction: column;
   height: 100%;
+  color: white;
   max-width: 800px;
   margin: 0 auto;
   border-radius: 12px;
@@ -445,6 +446,7 @@ button {
 
 .messaging-header h3 {
   margin: 0;
+  color: white;
   font-size: 1.2rem;
 }
 
