@@ -108,7 +108,6 @@ export default function StudentView({ user }) {
               <div className="empty-messages">
                 <div className="empty-icon">💬</div>
                 <p>Start the conversation!</p>
-                <p>Upload your audio file.</p>
               </div>
             ) : (
               messages.map(message => (
