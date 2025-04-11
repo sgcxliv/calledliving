@@ -107,8 +107,8 @@ export default function StudentView({ user }) {
             ) : messages.length === 0 ? (
               <div className="empty-messages">
                 <div className="empty-icon">💬</div>
-                <p>No messages yet. Start the conversation!</p>
-                <p>Upload an audio file or send a text message below.</p>
+                <p>Start the conversation!</p>
+                <p>Upload your audio file.</p>
               </div>
             ) : (
               messages.map(message => (
