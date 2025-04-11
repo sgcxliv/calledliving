@@ -450,6 +450,12 @@ button {
   font-size: 1.2rem;
 }
 
+.messaging-header .messaging-instructions {
+  color: white;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
 /* Messages area */
 .messaging-body {
   flex: 1;
