@@ -482,7 +482,10 @@ export default function LifecyclePage() {
               </p>
               
               <div style={{ marginTop: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                <p><strong>Due:</strong> Before Class on Tuesday (1:30 PM)</p>
+              <p><strong>Due:</strong> 
+              {id === '2' && ' Before Class on Tuesday (1:30 PM)'}
+              {id === '3' && ' Before Class on Thursday (1:30 PM)'}
+                </p>
                 <p><strong>Submission Format:</strong>
                 {id === '2' && ' Image, with a short caption if you wish to provide some context (optional).'}
                 {id === '3' && ' Video file (MP4 or MOV preferred). You may add a short caption or description.'}
