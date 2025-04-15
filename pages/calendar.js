@@ -163,7 +163,7 @@ export default function Calendar() {
               <td style={{ border: '1px solid #999', padding: '8px' }}>June 5th</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>FINAL</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Just Be There.</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>6 - 9PM, Together</td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>Time TBD, Together</td>
             </tr>
           </tbody>
         </table>
