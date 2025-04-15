@@ -47,8 +47,8 @@ export default function Home() {
           <h3>This Week: Childhood, or The No-Place. </h3>
           <ul>
             <li>On Tuesday April 15th, We are meeting at: 1:30 - 2:50PM, Old Union 122</li>
-            <li>On Thursday April 17th, We are meeting at: 1:30 - 2:50PM, TBD </li>
-            <li>TO-DO: Week 3 Assigned Readings + Movie, Week 3 Pair Interview Video Upload, Week 2 Audio Reflection</li>
+            <li>On Thursday April 17th, We are meeting at: 1:30 - 2:50PM, Encina Center 464 </li>
+            <li>TO-DO: Week 3 Assigned Readings + Movie, Week 3 Pair Interview Video Upload</li>
           </ul>
         </div>
         
