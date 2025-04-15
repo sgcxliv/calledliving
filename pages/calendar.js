@@ -57,8 +57,8 @@ export default function Calendar() {
               <td style={{ border: '1px solid #999', padding: '8px' }}>3 (Th)</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>April 17th</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Work-Life Balance</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>-</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, TBD </td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>Interview Clips</td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, Encina Center 464 </td>
             </tr>
             <tr>
               <td style={{ border: '1px solid #999', padding: '8px' }}>4 (T)</td>
