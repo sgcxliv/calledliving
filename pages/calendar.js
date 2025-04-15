@@ -153,17 +153,17 @@ export default function Calendar() {
             </tr>
                           <tr>
               <td style={{ border: '1px solid #999', padding: '8px' }}>10 (T)</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>June 3rd</td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>June 1st</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>The Good Life, or the Full Circle</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>Party</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>1:30 - 2:50, TBD </td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>Field Trip</td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>4 - 8PM, Outside</td>
             </tr>
                             <tr>
               <td style={{ border: '1px solid #999', padding: '8px' }}>10 (TBD)</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>TBA</td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>June 5th</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>FINAL</td>
               <td style={{ border: '1px solid #999', padding: '8px' }}>Just Be There.</td>
-              <td style={{ border: '1px solid #999', padding: '8px' }}>TBA</td>
+              <td style={{ border: '1px solid #999', padding: '8px' }}>6 - 9PM, Together</td>
             </tr>
           </tbody>
         </table>
