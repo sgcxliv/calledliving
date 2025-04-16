@@ -36,36 +36,41 @@ export default function LoginForm({ onSuccessfulLogin }) {
   };
 
   return (
-    <div className="login-form">
-      {error && <div className="error-message">{error}</div>}
-      
-      <form onSubmit={handleLogin}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-    </div>
-  );
-}
+  <div className="login-form">
+    {error && <div className="error-message">{error}</div>}
+
+    <form onSubmit={handleLogin}>
+      <div className="form-group">
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <button type="submit" disabled={loading}>
+        {loading ? 'Logging in...' : 'Login'}
+      </button>
+    </form>
+
+    <p style={{ marginTop: '1rem' }}>
+      <a href="/forgot-password" style={{ color: 'blue', textDecoration: 'underline' }}>
+        Forgot your password?
+      </a>
+    </p>
+  </div>
+);
