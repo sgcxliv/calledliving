@@ -74,3 +74,4 @@ export default function LoginForm({ onSuccessfulLogin }) {
     </p>
   </div>
 );
+}
