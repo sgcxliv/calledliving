@@ -10,21 +10,25 @@ export default function UpdatePassword() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Extract hash fragment containing the access token
+  // Use the token from the URL
   useEffect(() => {
-    // The token is typically in the hash fragment (#access_token=...)
-    const hash = window.location.hash;
-    const query = window.location.search;
+    // Get the token from the URL
+    const token = router.query.token || new URLSearchParams(window.location.search).get('token');
     
-    // Debug info - you can remove this later
-    console.log('Hash:', hash);
-    console.log('Query:', query);
+    // Debug info
+    console.log('Token from URL:', token);
     
-    // Check if we're just loading the page directly without a token
-    if (!hash && !query.includes('token=')) {
-      setError('No reset token found. Please request a new password reset link.');
+    if (!token) {
+      // Check hash fragment for token (Supabase sometimes puts it there)
+      const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+      const hashToken = hashParams.get('access_token');
+      console.log('Hash token:', hashToken);
+      
+      if (!hashToken) {
+        setError('No reset token found. Please request a new password reset link.');
+      }
     }
-  }, []);
+  }, [router.query]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -33,7 +37,31 @@ export default function UpdatePassword() {
     setLoading(true);
 
     try {
-      // The access token is automatically included in the session when using the reset link
+      // Get the token from the URL
+      const urlToken = router.query.token || 
+                     new URLSearchParams(window.location.search).get('token') ||
+                     new URLSearchParams(window.location.hash.replace('#', '')).get('access_token');
+      
+      if (!urlToken) {
+        setError('Missing password reset token. Please request a new password reset link.');
+        setLoading(false);
+        return;
+      }
+
+      // First, set session with the token
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+        access_token: urlToken,
+        refresh_token: urlToken, // This might not be needed but included for safety
+      });
+
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        setError(sessionError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Now update the password with the established session
       const { data, error } = await supabase.auth.updateUser({
         password: password
       });
@@ -46,8 +74,8 @@ export default function UpdatePassword() {
         setTimeout(() => router.push('/login'), 2000);
       }
     } catch (err) {
+      console.error('Unexpected error:', err);
       setError('An unexpected error occurred.');
-      console.error(err);
     } finally {
       setLoading(false);
     }
