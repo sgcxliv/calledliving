@@ -25,13 +25,16 @@ export default function LifecyclePage() {
     '1': 'What is Called Living?',
     '2': 'Childhood, or the No-place',
     '3': 'Mere Life, or, The Real World',
+    '4': 'Nightlife, or The Dark Side',
     // Other titles can be added here
+    
   };
 
   const backgroundImages = {
     '1': '/images/weekone-background.jpg',
     '2': '/images/weektwo-background.jpg',
     '3': '/images/weekthree-background.jpg',
+    '4': '/images/weekfour-background.jpg',
   };
   
   const themeContent = {
@@ -66,12 +69,24 @@ export default function LifecyclePage() {
         'What is "Mere Life?"',
       ]
     }
+    '4': {
+      title: 'Nightlife, or, The Dark Side',
+      description: 'What is your idea of nightlife?',
+      questions: [
+        'Is there a day-life?',
+        'Has your conception of nightlife changed throughout your life?',
+        'What is your experience with nightlife on campus?',
+        'Do you feel like you become someone else at Night?',
+        'What changes at night?',
+      ]
+    }
   };
 
   const reflectionPrompts = {
     '1': 'No prompt this week. Reflections Start Week 2!',
     '2': 'Prompt: What is called "Childhood"?',
     '3': 'Prompt: What is called "Work"?',
+    '4': 'Prompt: What is called "Nightlife"?',
 
   };
 
@@ -101,6 +116,12 @@ export default function LifecyclePage() {
         title: 'Wenders, Wim. "Movie: Perfect Days(2023)"',
         path: 'https://archive.org/details/perfect.-days.-2023.-webrip.-1080p.x-265.10bit.-psa.-dream'
       }
+    ]
+    '4': [
+      {
+        title: 'Murakami, Haruki. "Sleep"',
+        path: 'https://mylostwords.blogspot.com/2009/01/haruki-murakami-sleep.html'
+      },
     ]
   };
 
