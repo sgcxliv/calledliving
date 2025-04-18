@@ -46,9 +46,9 @@ export default function Home() {
         <div style={{ marginTop: '30px' }}>
           <h3>This Week: Childhood, or The No-Place. </h3>
           <ul>
-            <li>On Tuesday April 15th, We are meeting at: 1:30 - 2:50PM, Old Union 122</li>
-            <li>On Thursday April 17th, We are meeting at: 1:30 - 2:50PM, Encina Center 464 </li>
-            <li>TO-DO: Week 3 Assigned Readings + Movie, Week 3 Pair Interview Video Upload</li>
+            <li>On Tuesday April 22nd, We are meeting at: 9:30 - 10:50PM, Lake Lagunita Firepit</li>
+            <li>On Thursday April 24th, We are meeting at: 1:30 - 2:50PM, Encina Center 464 </li>
+            <li>TO-DO: Week 4 Assigned Reading</li>
           </ul>
         </div>
         
