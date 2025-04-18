@@ -68,7 +68,7 @@ export default function LifecyclePage() {
         'What is "Real Life?"',
         'What is "Mere Life?"',
       ]
-    }
+    },
     '4': {
       title: 'Nightlife, or, The Dark Side',
       description: 'What is your idea of nightlife?',
