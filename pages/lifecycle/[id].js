@@ -85,9 +85,8 @@ export default function LifecyclePage() {
   const reflectionPrompts = {
     '1': 'No prompt this week. Reflections Start Week 2!',
     '2': 'Prompt: What is called "Childhood"?',
-    '3': 'Prompt: What is called "Work"?',
-    '4': 'Prompt: What is called "Nightlife"?',
-
+    '3': 'Prompt: What is called the relationship between work and life?',
+    '4': 'to be released...',
   };
 
   const requiredReadings = {
